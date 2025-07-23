@@ -20,7 +20,9 @@ class VoiceGenerator:
             return self._get_mock_voice_actors()
         
         try:
-            async with aiohttp.ClientSession() as session:
+            # SSL証明書検証を無効化（開発環境用）
+            connector = aiohttp.TCPConnector(ssl=False)
+            async with aiohttp.ClientSession(connector=connector) as session:
                 headers = {
                     "Authorization": f"Bearer {self.api_key}",
                     "Content-Type": "application/json"
@@ -50,7 +52,9 @@ class VoiceGenerator:
             return self._generate_mock_audio(text)
         
         try:
-            async with aiohttp.ClientSession() as session:
+            # SSL証明書検証を無効化（開発環境用）
+            connector = aiohttp.TCPConnector(ssl=False)
+            async with aiohttp.ClientSession(connector=connector) as session:
                 headers = {
                     "Authorization": f"Bearer {self.api_key}",
                     "Content-Type": "application/json"

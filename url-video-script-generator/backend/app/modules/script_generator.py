@@ -33,13 +33,20 @@ class ScriptGenerator:
             
             # タイトル生成（未指定の場合）
             if not title:
-                title = await self.claude.generate_title(summary)
+                if self.claude:
+                    title = await self.claude.generate_title(summary)
+                else:
+                    title = self._generate_fallback_title(summary, scenario_type)
             
             # 台本生成プロンプト作成
             prompt = self._create_generation_prompt(summary, template, target_duration)
             
-            # Claude APIで台本生成
-            script_content = await self._generate_with_claude(prompt)
+            # Claude APIで台本生成（利用できない場合はフォールバック）
+            if self.claude:
+                script_content = await self._generate_with_claude(prompt)
+            else:
+                logger.warning("Claude API not available, using fallback script generation")
+                script_content = self._generate_fallback_script_content(summary, template, target_duration)
             
             # 台本データを構造化
             structured_script = self._structure_script_data(
@@ -264,3 +271,56 @@ class ScriptGenerator:
             "metadata": metadata,
             "scenes": scenes
         }
+    
+    def _generate_fallback_title(self, summary: str, scenario_type: str) -> str:
+        """フォールバックタイトルを生成"""
+        scenario_names = {
+            "product_introduction": "製品紹介",
+            "tutorial": "使い方ガイド",
+            "feature_explanation": "機能説明"
+        }
+        
+        # 要約から短いキーワードを抽出
+        words = summary.split()[:3]  # 最初の3単語を使用
+        keyword = " ".join(words)[:10] if words else "コンテンツ"
+        
+        base_name = scenario_names.get(scenario_type, "動画")
+        return f"{keyword} - {base_name}"
+    
+    def _generate_fallback_script_content(self, summary: str, template: Dict, target_duration: int) -> str:
+        """フォールバック台本コンテンツを生成"""
+        # テンプレート構造に基づいてシンプルな台本を生成
+        scenes = []
+        current_time = 0
+        
+        for i, section in enumerate(template['structure']):
+            duration = section['duration_ratio'] * target_duration
+            
+            # セクションに応じたデフォルトテキスト
+            if section['section'] == 'opening':
+                text = "こんにちは！本日はご視聴いただき、ありがとうございます。"
+            elif section['section'] == 'problem':
+                text = "まず、解決すべき課題について説明いたします。"
+            elif section['section'] == 'solution':
+                text = "この内容について詳しくご紹介いたします。"
+            elif section['section'] == 'cta':
+                text = "ご視聴いただき、ありがとうございました。"
+            else:
+                text = f"{section['name']}について説明いたします。"
+            
+            scene = {
+                "scene_id": i + 1,
+                "scene_type": section['section'],
+                "duration": round(duration, 1),
+                "text": text,
+                "voice_settings": {
+                    "emotion": "neutral",
+                    "speed": 1.0,
+                    "pitch": 1.0
+                }
+            }
+            scenes.append(scene)
+        
+        # JSONとして返す
+        import json
+        return json.dumps({"scenes": scenes}, ensure_ascii=False, indent=2)

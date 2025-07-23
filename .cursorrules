@@ -1,4 +1,4 @@
-# URL動画台本生成システム - 開発ルール
+g# URL動画台本生成システム - 開発ルール
 
 ## 基本ルール
 - 設計書（design-document.md）と実行計画書（execution-plan.md）に従って実装する

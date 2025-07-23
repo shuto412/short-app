@@ -80,6 +80,9 @@ async def process_full(
             logger.info(f"Starting project processing: {project_id}")
             update_project_status(project_id, "processing")
             
+            # voice_actor_idをローカル変数として初期化（外側の関数パラメータから値をコピー）
+            selected_voice_actor_id = voice_actor_id
+            
             # 1. スクレイピング
             scraped_content = await scraper.scrape(project.url)
             await file_manager.save_file(project_id, "scraped_content.txt", scraped_content)
@@ -101,11 +104,11 @@ async def process_full(
             await file_manager.save_file(project_id, "script.yaml", script)
             
             # 4. 音声生成
-            if not voice_actor_id:
+            if not selected_voice_actor_id:
                 voice_actors = await voice_generator.get_voice_actors()
-                voice_actor_id = voice_actors[0]["id"] if voice_actors else "mock-voice-001"
+                selected_voice_actor_id = voice_actors[0]["id"] if voice_actors else "mock-voice-001"
             
-            voice_prompt = voice_generator.create_voice_prompt(script, voice_actor_id)
+            voice_prompt = voice_generator.create_voice_prompt(script, selected_voice_actor_id)
             await file_manager.save_file(project_id, "voice_prompt.yaml", voice_prompt)
             
             audio_data = await voice_generator.generate_from_script(voice_prompt)

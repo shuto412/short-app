@@ -10,7 +10,16 @@ class ClaudeClient:
         if not settings.CLAUDE_API_KEY or settings.CLAUDE_API_KEY == "your_key_here":
             raise ValueError("CLAUDE_API_KEY is not properly configured")
         
-        self.client = anthropic.Anthropic(api_key=settings.CLAUDE_API_KEY)
+        try:
+            self.client = anthropic.Anthropic(api_key=settings.CLAUDE_API_KEY)
+        except Exception as e:
+            logger.error(f"Failed to initialize Anthropic client: {str(e)}")
+            # プロキシ関連のエラーの場合、プロキシなしで初期化を試行
+            try:
+                self.client = anthropic.Client(api_key=settings.CLAUDE_API_KEY)
+            except Exception as e2:
+                logger.error(f"Failed to initialize Claude client with fallback: {str(e2)}")
+                raise ValueError(f"Claude client initialization failed: {str(e2)}")
         self.max_tokens = 4000
     
     async def summarize(self, content: str, max_length: int = 500) -> str:

@@ -6,12 +6,14 @@ from app.api.generation import router as generation_router
 
 app = FastAPI(title="URL Video Script Generator")
 
+# CORS設定を強化
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # ルーターを追加
