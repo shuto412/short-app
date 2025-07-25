@@ -3,6 +3,7 @@ from fastapi.responses import FileResponse
 from typing import Optional, Dict
 import logging
 import os
+from datetime import datetime
 
 from app.modules.scraper import Scraper
 from app.modules.script_generator import ScriptGenerator
@@ -13,7 +14,7 @@ from app.api.project import projects_db, update_project_status
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/generate", tags=["generation"])
+router = APIRouter(tags=["generation"])
 
 # モジュールの初期化
 scraper = Scraper()
@@ -77,6 +78,7 @@ async def process_full(
     # バックグラウンドタスクとして実行
     async def process_task():
         try:
+            logger.info(f"Background task started for project: {project_id}")
             logger.info(f"Starting project processing: {project_id}")
             update_project_status(project_id, "processing")
             
@@ -88,18 +90,88 @@ async def process_full(
             await file_manager.save_file(project_id, "scraped_content.txt", scraped_content)
             
             # 2. 要約生成
+            logger.info(f"Starting summary generation for project: {project_id}")
+            
+            # まずテキスト要約を生成・保存
             if claude_client:
                 try:
-                    summary = await claude_client.summarize(scraped_content)
-                except Exception:
+                    text_summary = await claude_client.summarize(scraped_content)
+                    await file_manager.save_file(project_id, "summary.txt", text_summary)
+                    logger.info(f"Text summary saved for project: {project_id}")
+                except Exception as e:
+                    logger.warning(f"Text summary generation failed: {str(e)}")
                     summary = scraped_content[:500] + "..." if len(scraped_content) > 500 else scraped_content
+                    await file_manager.save_file(project_id, "summary.txt", summary)
             else:
                 summary = scraped_content[:500] + "..." if len(scraped_content) > 500 else scraped_content
+                await file_manager.save_file(project_id, "summary.txt", summary)
             
-            await file_manager.save_file(project_id, "summary.txt", summary)
+            # 構造化要約の生成（常に試行、失敗時はフォールバック）
+            summary_yaml_created = False
+            
+            if claude_client:
+                try:
+                    logger.info(f"Starting structured summary generation for project: {project_id}")
+                    structured_summary = await claude_client.create_structured_summary(scraped_content)
+                    
+                    # メタデータを追加
+                    summary_data = {
+                        "metadata": {
+                            "project_id": project_id,
+                            "url": project.url,
+                            "generated_at": datetime.now().isoformat(),
+                            "content_length": len(scraped_content)
+                        },
+                        "product_info": structured_summary
+                    }
+                    
+                    # YAMLファイルとして保存
+                    await file_manager.save_file(project_id, "summary.yaml", summary_data)
+                    logger.info(f"Structured summary YAML saved successfully for project: {project_id}")
+                    summary_yaml_created = True
+                    
+                except Exception as e:
+                    logger.error(f"Structured summary generation failed: {str(e)}")
+                    # 構造化要約失敗時の処理は下で実行
+            
+            # 構造化要約が作成されていない場合は、必ずフォールバック版を作成
+            if not summary_yaml_created:
+                logger.info(f"Creating fallback structured summary for project: {project_id}")
+                fallback_summary_data = {
+                    "metadata": {
+                        "project_id": project_id,
+                        "url": project.url,
+                        "generated_at": datetime.now().isoformat(),
+                        "content_length": len(scraped_content),
+                        "error": "構造化要約生成失敗またはClaude client未初期化",
+                        "fallback": True
+                    },
+                    "product_info": {
+                        "product_name": "製品名取得失敗",
+                        "price": "価格情報取得失敗",
+                        "specifications": {
+                            "size": "サイズ情報なし",
+                            "weight": "重量情報なし",
+                            "dimensions": {},
+                            "materials": "素材情報なし",
+                            "other": "その他仕様なし"
+                        },
+                        "description": scraped_content[:200] + "..." if len(scraped_content) > 200 else scraped_content
+                    }
+                }
+                
+                await file_manager.save_file(project_id, "summary.yaml", fallback_summary_data)
+                logger.info(f"Fallback summary YAML saved for project: {project_id}")
             
             # 3. 台本生成
-            script = await script_generator.generate(summary, project.scenario_type)
+            # summary変数が定義されていない場合は、テキスト要約を読み込む
+            try:
+                summary_text = await file_manager.read_file(project_id, "summary.txt")
+            except Exception as e:
+                logger.warning(f"Failed to read summary.txt: {str(e)}")
+                summary_text = scraped_content[:500] + "..." if len(scraped_content) > 500 else scraped_content
+            
+            script = await script_generator.generate(summary_text, project.scenario_type)
             script["metadata"]["project_id"] = project_id
             await file_manager.save_file(project_id, "script.yaml", script)
             
@@ -126,6 +198,8 @@ async def process_full(
             
         except Exception as e:
             logger.error(f"Project processing failed for {project_id}: {str(e)}")
+            import traceback
+            logger.error(f"Full processing error traceback: {traceback.format_exc()}")
             update_project_status(project_id, "failed")
     
     background_tasks.add_task(process_task)
@@ -144,6 +218,7 @@ async def download_file(project_id: str, file_type: str):
         "subtitle": "subtitle.srt",
         "subtitle-vtt": "subtitle.vtt",
         "summary": "summary.txt",
+        "summary-yaml": "summary.yaml",
         "content": "scraped_content.txt",
         "voice-prompt": "voice_prompt.yaml"
     }

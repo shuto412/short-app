@@ -9,13 +9,14 @@ from app.modules.file_manager import FileManager
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/projects", tags=["projects"])
+router = APIRouter(tags=["projects"])
 file_manager = FileManager()
 
 # 一時的なメモリストレージ（実際はDBを使用）
 projects_db: Dict[str, Project] = {}
 
 @router.post("/")
+@router.post("")  # フロントエンドとの互換性のため両方対応
 async def create_project(project: ProjectCreate):
     """新規プロジェクト作成"""
     try:
@@ -148,7 +149,8 @@ def _calculate_progress(project_id: str, files: List[str]) -> Dict:
     """ファイル存在確認で進捗を計算"""
     required_files = [
         "scraped_content.txt",
-        "summary.txt", 
+        "summary.txt",
+        "summary.yaml",
         "script.yaml",
         "voice_prompt.yaml",
         "audio.wav",
@@ -160,7 +162,8 @@ def _calculate_progress(project_id: str, files: List[str]) -> Dict:
     
     step_names = [
         "スクレイピング",
-        "要約生成",
+        "要約生成（テキスト）",
+        "要約生成（構造化）",
         "台本生成", 
         "音声プロンプト作成",
         "音声生成",
