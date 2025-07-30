@@ -3,6 +3,7 @@ import { Container, CssBaseline, ThemeProvider, createTheme } from '@mui/materia
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { UrlInput } from './components/UrlInput';
 import { ScenarioSelector } from './components/ScenarioSelector';
+import { VoiceActorSelector } from './components/VoiceActorSelector';
 import { ProgressDisplay } from './components/ProgressDisplay';
 import { ResultViewer } from './components/ResultViewer';
 import { projectAPI, generationAPI } from './services/api';
@@ -40,6 +41,7 @@ function App() {
   const [projectId, setProjectId] = useState<string>('');
   const [url, setUrl] = useState<string>('');
   const [scenarioType, setScenarioType] = useState<string>('');
+  const [selectedVoiceActorId, setSelectedVoiceActorId] = useState<string>('231e0170-0ece-4155-be44-231423062f41');
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [voiceActors, setVoiceActors] = useState<VoiceActor[]>([]);
   const [project, setProject] = useState<Project | null>(null);
@@ -149,14 +151,22 @@ function App() {
     }
   };
 
-  const handleScenarioSelect = async (selectedScenarioType: string) => {
+  const handleScenarioSelect = (selectedScenarioType: string) => {
     setScenarioType(selectedScenarioType);
+    setAppState('voice-actor-selection');
+  };
+
+  const handleVoiceActorSelect = (voiceActorId: string) => {
+    setSelectedVoiceActorId(voiceActorId);
+  };
+
+  const handleStartProcessing = async () => {
     setIsLoading(true);
     setError('');
 
     try {
       // 処理開始
-      await generationAPI.process(projectId, voiceActors[0]?.id);
+      await generationAPI.process(projectId, selectedVoiceActorId);
       setAppState('processing');
     } catch (error: any) {
       setError(error.message || '処理の開始に失敗しました');
@@ -171,6 +181,7 @@ function App() {
     setProjectId('');
     setUrl('');
     setScenarioType('');
+    setSelectedVoiceActorId('231e0170-0ece-4155-be44-231423062f41');
     setProject(null);
     setFiles([]);
     setProcessingStatus(null);
@@ -196,6 +207,17 @@ function App() {
             scenarios={scenarios}
             selectedScenario={scenarioType}
             onSelect={handleScenarioSelect}
+            isLoading={isLoading}
+          />
+        );
+
+      case 'voice-actor-selection':
+        return (
+          <VoiceActorSelector
+            voiceActors={voiceActors}
+            selectedVoiceActorId={selectedVoiceActorId}
+            onSelect={handleVoiceActorSelect}
+            onNext={handleStartProcessing}
             isLoading={isLoading}
           />
         );

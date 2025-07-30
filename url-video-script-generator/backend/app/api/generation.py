@@ -178,13 +178,62 @@ async def process_full(
             # 4. 音声生成
             if not selected_voice_actor_id:
                 voice_actors = await voice_generator.get_voice_actors()
-                selected_voice_actor_id = voice_actors[0]["id"] if voice_actors else "mock-voice-001"
+                logger.info(f"📊 取得したボイスアクターの構造: {voice_actors[0] if voice_actors else 'リストが空'}")
+                
+                # デフォルトIDを優先的に使用（花村 穂ノ香）
+                default_voice_actor_id = "231e0170-0ece-4155-be44-231423062f41"
+                
+                # デフォルトIDが利用可能かチェック
+                if voice_actors:
+                    available_ids = []
+                    for actor in voice_actors:
+                        if isinstance(actor, dict) and "id" in actor:
+                            available_ids.append(actor["id"])
+                    
+                    if default_voice_actor_id in available_ids:
+                        selected_voice_actor_id = default_voice_actor_id
+                        logger.info(f"🎯 デフォルトボイスアクターを使用: {selected_voice_actor_id}")
+                    else:
+                        # デフォルトが利用できない場合は最初のものを使用
+                        first_actor = voice_actors[0]
+                        selected_voice_actor_id = first_actor.get("id", "mock-voice-001")
+                        logger.info(f"🎯 デフォルトが利用不可、代替を使用: {selected_voice_actor_id}")
+                        logger.info(f"📋 利用可能ID: {available_ids[:3]}...")  # 最初の3つを表示
+                else:
+                    selected_voice_actor_id = default_voice_actor_id  # モックデータでもデフォルトIDを使用
+                    
+                logger.info(f"🎯 最終選択されたID: {selected_voice_actor_id} (取得数: {len(voice_actors)})")
             
             voice_prompt = voice_generator.create_voice_prompt(script, selected_voice_actor_id)
             await file_manager.save_file(project_id, "voice_prompt.yaml", voice_prompt)
             
-            audio_data = await voice_generator.generate_from_script(voice_prompt)
-            await file_manager.save_file(project_id, "audio.wav", audio_data)
+            # 個別音声ファイル生成
+            audio_files = await voice_generator.generate_individual_files_from_script(voice_prompt)
+            
+            # 各セグメントを個別ファイルとして保存
+            for file_info in audio_files:
+                await file_manager.save_file(project_id, file_info["filename"], file_info["audio_data"])
+                logger.info(f"📁 保存完了: {file_info['filename']} ({file_info['size_bytes']} bytes)")
+            
+            # 従来の統合ファイルも生成（互換性のため）
+            if audio_files:
+                combined_audio = voice_generator._combine_audio_segments([f["audio_data"] for f in audio_files])
+                await file_manager.save_file(project_id, "audio_combined.wav", combined_audio)
+                logger.info(f"📁 統合ファイル保存完了: audio_combined.wav ({len(combined_audio)} bytes)")
+            
+            # 音声ファイル情報を保存
+            audio_files_info = [
+                {
+                    "segment_id": f["segment_id"],
+                    "filename": f["filename"],
+                    "text": f["text"],
+                    "duration": f["duration"],
+                    "size_bytes": f["size_bytes"],
+                    "error": f.get("error")
+                }
+                for f in audio_files
+            ]
+            await file_manager.save_file(project_id, "audio_files_info.yaml", audio_files_info)
             
             # 5. 字幕生成
             subtitle = subtitle_generator.generate_srt(script)
@@ -209,18 +258,47 @@ async def process_full(
         "project_id": project_id
     }
 
+@router.get("/download/{project_id}/segments/{segment_filename}")
+async def download_audio_segment(project_id: str, segment_filename: str):
+    """個別音声セグメントダウンロード"""
+    logger.info(f"🎵 Individual audio download request: project={project_id}, file={segment_filename}")
+    
+    # セキュリティ: ファイル名検証
+    if not segment_filename.startswith("audio_segment_") or not segment_filename.endswith(".wav"):
+        logger.error(f"❌ Invalid filename: {segment_filename}")
+        raise HTTPException(status_code=400, detail="Invalid audio segment filename")
+    
+    # ファイルパス取得
+    file_path = file_manager.get_file_path(project_id, segment_filename)
+    logger.info(f"📁 File path: {file_path}")
+    logger.info(f"📂 File exists: {os.path.exists(file_path)}")
+    
+    if not os.path.exists(file_path):
+        logger.error(f"❌ File not found: {file_path}")
+        raise HTTPException(status_code=404, detail="Audio segment not found")
+    
+    logger.info(f"✅ Serving file: {file_path}")
+    return FileResponse(
+        path=file_path,
+        media_type="audio/wav",
+        filename=segment_filename
+    )
+
 @router.get("/download/{project_id}/{file_type}")
 async def download_file(project_id: str, file_type: str):
     """ファイルダウンロード"""
+    logger.info(f"📁 General download request: project={project_id}, type={file_type}")
+    
     file_mapping = {
         "script": "script.yaml",
-        "audio": "audio.wav",
+        "audio": "audio_combined.wav",  # 統合音声ファイルへ変更
         "subtitle": "subtitle.srt",
         "subtitle-vtt": "subtitle.vtt",
         "summary": "summary.txt",
         "summary-yaml": "summary.yaml",
         "content": "scraped_content.txt",
-        "voice-prompt": "voice_prompt.yaml"
+        "voice-prompt": "voice_prompt.yaml",
+        "audio-info": "audio_files_info.yaml"  # 音声ファイル情報追加
     }
     
     if file_type not in file_mapping:
@@ -250,3 +328,34 @@ async def download_file(project_id: str, file_type: str):
         media_type=media_type,
         filename=filename
     )
+
+@router.get("/audio-files/{project_id}")
+async def get_audio_files_list(project_id: str):
+    """プロジェクトの音声ファイル一覧取得"""
+    try:
+        # 音声ファイル情報を読み込み
+        info_path = file_manager.get_file_path(project_id, "audio_files_info.yaml")
+        
+        if not os.path.exists(info_path):
+            raise HTTPException(status_code=404, detail="Audio files info not found")
+        
+        with open(info_path, 'r', encoding='utf-8') as f:
+            import yaml
+            audio_files_info = yaml.safe_load(f)
+        
+        # 各ファイルの存在確認
+        for file_info in audio_files_info:
+            file_path = file_manager.get_file_path(project_id, file_info["filename"])
+            file_info["exists"] = os.path.exists(file_path)
+            file_info["download_url"] = f"/api/generate/download/{project_id}/segments/{file_info['filename']}"
+        
+        return {
+            "project_id": project_id,
+            "audio_files": audio_files_info,
+            "total_files": len(audio_files_info),
+            "combined_audio_url": f"/api/generate/download/{project_id}/audio"
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get audio files list: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to get audio files list")

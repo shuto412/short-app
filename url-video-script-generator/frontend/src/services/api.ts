@@ -103,7 +103,28 @@ export const generationAPI = {
     return data.voice_actors || [];
   },
   
+  getAudioFiles: async (projectId: string) => {
+    console.log(`🎵 Getting audio files for project: ${projectId}`);
+    try {
+      const data = await debugFetch(`${API_BASE_URL}/audio-files/${projectId}`);
+      return data;
+    } catch (error) {
+      console.error('Failed to get audio files:', error);
+      // フォールバック: 統合ファイルのみ
+      return {
+        project_id: projectId,
+        audio_files: [],
+        total_files: 0,
+        combined_audio_url: `${API_BASE_URL}/generate/download/${projectId}/audio`
+      };
+    }
+  },
+  
   download: (projectId: string, fileType: string) => {
     return `${API_BASE_URL}/generate/download/${projectId}/${fileType}`;
+  },
+  
+  downloadAudioSegment: (projectId: string, filename: string) => {
+    return `${API_BASE_URL}/generate/download/${projectId}/segments/${filename}`;
   },
 }; 

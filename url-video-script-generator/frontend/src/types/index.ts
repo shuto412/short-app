@@ -36,6 +36,24 @@ export interface GeneratedFile {
   downloadUrl: string;
 }
 
+export interface AudioSegment {
+  segment_id: string;
+  filename: string;
+  text: string;
+  duration: number;
+  size_bytes: number;
+  exists: boolean;
+  download_url: string;
+  error?: string;
+}
+
+export interface AudioFilesResponse {
+  project_id: string;
+  audio_files: AudioSegment[];
+  total_files: number;
+  combined_audio_url: string;
+}
+
 // 処理ステップの型定義
 export interface ProcessingStep {
   step: string;  // ステップ名
@@ -78,6 +96,14 @@ export interface ScenarioSelectorProps {
   isLoading?: boolean;
 }
 
+export interface VoiceActorSelectorProps {
+  voiceActors: VoiceActor[];
+  selectedVoiceActorId?: string;
+  onSelect: (voiceActorId: string) => void;
+  onNext?: () => void;
+  isLoading?: boolean;
+}
+
 export interface ProgressDisplayProps {
   status: ProcessingStatus | null;
   isVisible: boolean;
@@ -94,5 +120,6 @@ export interface ResultViewerProps {
 export type AppState = 
   | 'url-input'
   | 'scenario-selection'
+  | 'voice-actor-selection'
   | 'processing'
   | 'result'; 
