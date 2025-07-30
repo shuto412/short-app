@@ -1,0 +1,24 @@
+name: "ニュースレポート"
+description: "最新の情報やニュースを報道スタイルで伝えるシナリオ"
+structure:
+  - section: "headline"
+    name: "ヘッドライン"
+    duration_ratio: 0.15
+    description: "重要なニュースのトップラインを発表"
+  - section: "background"
+    name: "背景説明"
+    duration_ratio: 0.25
+    description: "ニュースの背景と関連情報を説明"
+  - section: "details"
+    name: "詳細報告"
+    duration_ratio: 0.45
+    description: "事実関係と詳細な情報を報告"
+  - section: "impact"
+    name: "影響・展望"
+    duration_ratio: 0.15
+    description: "今後の影響や展望を分析"
+voice_settings:
+  emotion: "professional"
+  speed: 1.1
+  pitch: 1.0
+  volume: 1.0

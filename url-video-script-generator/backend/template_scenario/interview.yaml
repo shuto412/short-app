@@ -1,0 +1,24 @@
+name: "インタビュー"
+description: "専門家や関係者へのインタビュー形式のシナリオ"
+structure:
+  - section: "guest_introduction"
+    name: "ゲスト紹介"
+    duration_ratio: 0.15
+    description: "インタビューゲストの紹介と背景"
+  - section: "main_topic"
+    name: "メイントピック"
+    duration_ratio: 0.5
+    description: "核心的な質問と回答の内容"
+  - section: "insights"
+    name: "洞察・意見"
+    duration_ratio: 0.25
+    description: "専門的な見解や独自の洞察"
+  - section: "wrap_up"
+    name: "まとめ"
+    duration_ratio: 0.1
+    description: "インタビューの締めくくりと感謝"
+voice_settings:
+  emotion: "conversational"
+  speed: 1.0
+  pitch: 1.0
+  volume: 1.0

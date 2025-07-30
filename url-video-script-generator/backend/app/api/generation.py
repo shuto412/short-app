@@ -32,26 +32,74 @@ file_manager = FileManager()
 
 @router.get("/scenarios")
 async def get_scenarios():
-    """シナリオテンプレート一覧"""
-    return {
-        "scenarios": [
-            {
-                "id": "product_introduction",
-                "name": "製品紹介",
-                "description": "製品の特徴や利点を紹介"
-            },
-            {
-                "id": "tutorial", 
-                "name": "使い方説明",
-                "description": "ステップバイステップの説明"
-            },
-            {
-                "id": "feature_explanation",
-                "name": "機能説明",
-                "description": "特定機能の詳細説明"
-            }
-        ]
-    }
+    """シナリオテンプレート一覧（簡略版）"""
+    try:
+        templates_data = script_generator.get_available_templates()
+        templates = templates_data.get("templates", {})
+        
+        scenarios = []
+        for template_id, template_info in templates.items():
+            # テンプレートファイルから名前と説明を読み込み
+            try:
+                template = script_generator._load_template(template_id)
+                scenarios.append({
+                    "id": template_id,
+                    "name": template.get("name", template_id),
+                    "description": template.get("description", "シナリオテンプレート"),
+                    "category": template_info.get("category", "その他")
+                })
+            except Exception as e:
+                logger.warning(f"Failed to load template {template_id}: {str(e)}")
+                continue
+        
+        return {"scenarios": scenarios}
+        
+    except Exception as e:
+        logger.error(f"Failed to get scenarios: {str(e)}")
+        # フォールバック（最低限のテンプレート）
+        return {
+            "scenarios": [
+                {
+                    "id": "product_introduction",
+                    "name": "製品紹介",
+                    "description": "製品の特徴や利点を紹介",
+                    "category": "ビジネス"
+                }
+            ]
+        }
+
+@router.get("/templates")
+async def get_templates():
+    """テンプレート詳細情報一覧"""
+    try:
+        templates_data = script_generator.get_available_templates()
+        templates = templates_data.get("templates", {})
+        
+        detailed_templates = {}
+        for template_id, template_info in templates.items():
+            try:
+                template = script_generator._load_template(template_id)
+                detailed_templates[template_id] = {
+                    "name": template.get("name", template_id),
+                    "description": template.get("description", "シナリオテンプレート"),
+                    "category": template_info.get("category", "その他"),
+                    "tags": template_info.get("tags", []),
+                    "structure": template.get("structure", []),
+                    "voice_settings": template.get("voice_settings", {}),
+                    "file": template_info.get("file")
+                }
+            except Exception as e:
+                logger.warning(f"Failed to load template {template_id}: {str(e)}")
+                continue
+        
+        return {
+            "templates": detailed_templates,
+            "total_count": len(detailed_templates)
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get templates: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to load templates")
 
 @router.get("/voice-actors")
 async def get_voice_actors():

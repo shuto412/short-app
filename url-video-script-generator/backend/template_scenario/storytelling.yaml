@@ -1,0 +1,24 @@
+name: "ストーリーテリング"
+description: "物語性を重視した感情的な訴求を行うシナリオ"
+structure:
+  - section: "setup"
+    name: "導入・設定"
+    duration_ratio: 0.2
+    description: "物語の舞台設定と登場人物の紹介"
+  - section: "conflict"
+    name: "課題・葛藤"
+    duration_ratio: 0.3
+    description: "主人公が直面する問題や困難"
+  - section: "resolution"
+    name: "解決・転換"
+    duration_ratio: 0.35
+    description: "問題の解決方法と結果"
+  - section: "message"
+    name: "メッセージ"
+    duration_ratio: 0.15
+    description: "物語から得られる教訓やメッセージ"
+voice_settings:
+  emotion: "narrative"
+  speed: 0.9
+  pitch: 1.0
+  volume: 1.0

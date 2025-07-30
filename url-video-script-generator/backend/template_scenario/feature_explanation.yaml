@@ -1,0 +1,20 @@
+name: "機能説明"
+description: "特定の機能や仕組みを詳細に解説するシナリオ"
+structure:
+  - section: "intro"
+    name: "導入"
+    duration_ratio: 0.2
+    description: "機能の概要と重要性を紹介"
+  - section: "features"
+    name: "機能詳細"
+    duration_ratio: 0.6
+    description: "機能の詳細な説明とデモンストレーション"
+  - section: "benefits"
+    name: "利点・効果"
+    duration_ratio: 0.2
+    description: "機能を使うことのメリットと効果を説明"
+voice_settings:
+  emotion: "informative"
+  speed: 1.0
+  pitch: 1.0
+  volume: 1.0

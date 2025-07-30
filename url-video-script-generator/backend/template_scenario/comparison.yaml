@@ -1,0 +1,24 @@
+name: "比較・対比"
+description: "複数の選択肢や製品を比較検討するシナリオ"
+structure:
+  - section: "overview"
+    name: "比較概要"
+    duration_ratio: 0.2
+    description: "比較対象と比較ポイントを紹介"
+  - section: "option_a"
+    name: "選択肢A"
+    duration_ratio: 0.25
+    description: "第一の選択肢の特徴を説明"
+  - section: "option_b"
+    name: "選択肢B"
+    duration_ratio: 0.25
+    description: "第二の選択肢の特徴を説明"
+  - section: "recommendation"
+    name: "推奨・まとめ"
+    duration_ratio: 0.3
+    description: "比較結果に基づく推奨と判断基準"
+voice_settings:
+  emotion: "balanced"
+  speed: 1.0
+  pitch: 1.0
+  volume: 1.0

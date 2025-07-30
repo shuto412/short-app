@@ -1,0 +1,24 @@
+name: "チュートリアル"
+description: "手順やプロセスをわかりやすく説明するシナリオ"
+structure:
+  - section: "intro"
+    name: "導入"
+    duration_ratio: 0.1
+    description: "チュートリアルの目的と内容を紹介"
+  - section: "overview"
+    name: "概要説明"
+    duration_ratio: 0.2
+    description: "全体の流れと必要な準備を説明"
+  - section: "steps"
+    name: "手順説明"
+    duration_ratio: 0.6
+    description: "具体的な手順を段階的に説明"
+  - section: "conclusion"
+    name: "まとめ"
+    duration_ratio: 0.1
+    description: "要点のまとめと次のステップを提示"
+voice_settings:
+  emotion: "friendly"
+  speed: 0.95
+  pitch: 1.0
+  volume: 1.0

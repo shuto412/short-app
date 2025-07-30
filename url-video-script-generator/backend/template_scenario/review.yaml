@@ -1,0 +1,24 @@
+name: "レビュー・評価"
+description: "製品やサービスを客観的に評価・レビューするシナリオ"
+structure:
+  - section: "introduction"
+    name: "紹介"
+    duration_ratio: 0.15
+    description: "レビュー対象の基本情報を紹介"
+  - section: "positive_points"
+    name: "良い点"
+    duration_ratio: 0.35
+    description: "優れている点や特長を詳しく説明"
+  - section: "concerns"
+    name: "気になる点"
+    duration_ratio: 0.25
+    description: "改善点や注意点を客観的に指摘"
+  - section: "verdict"
+    name: "総合評価"
+    duration_ratio: 0.25
+    description: "総合的な評価と推奨度を提示"
+voice_settings:
+  emotion: "analytical"
+  speed: 1.0
+  pitch: 1.0
+  volume: 1.0

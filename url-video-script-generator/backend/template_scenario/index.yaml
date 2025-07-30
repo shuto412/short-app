@@ -1,0 +1,45 @@
+templates:
+  product_introduction:
+    file: "product_introduction.yaml"
+    category: "ビジネス"
+    tags: ["製品", "紹介", "マーケティング"]
+    
+  tutorial:
+    file: "tutorial.yaml"
+    category: "教育"
+    tags: ["チュートリアル", "手順", "学習"]
+    
+  feature_explanation:
+    file: "feature_explanation.yaml"
+    category: "解説"
+    tags: ["機能", "説明", "技術"]
+    
+  news_report:
+    file: "news_report.yaml"
+    category: "報道"
+    tags: ["ニュース", "報告", "情報"]
+    
+  review:
+    file: "review.yaml"
+    category: "評価"
+    tags: ["レビュー", "評価", "分析"]
+    
+  comparison:
+    file: "comparison.yaml"
+    category: "比較"
+    tags: ["比較", "検討", "選択"]
+    
+  interview:
+    file: "interview.yaml"
+    category: "対話"
+    tags: ["インタビュー", "対談", "専門家"]
+    
+  event_coverage:
+    file: "event_coverage.yaml"
+    category: "イベント"
+    tags: ["イベント", "セミナー", "案内"]
+    
+  storytelling:
+    file: "storytelling.yaml"
+    category: "物語"
+    tags: ["ストーリー", "感情", "体験"]

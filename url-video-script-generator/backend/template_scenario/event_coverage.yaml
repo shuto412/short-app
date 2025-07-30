@@ -1,0 +1,24 @@
+name: "イベント紹介"
+description: "イベントやセミナーの内容を紹介するシナリオ"
+structure:
+  - section: "event_overview"
+    name: "イベント概要"
+    duration_ratio: 0.2
+    description: "イベントの基本情報と開催目的"
+  - section: "highlights"
+    name: "注目ポイント"
+    duration_ratio: 0.4
+    description: "イベントの見どころや特別な内容"
+  - section: "speakers_content"
+    name: "講演者・内容"
+    duration_ratio: 0.25
+    description: "講演者の紹介と講演内容の要約"
+  - section: "participation_info"
+    name: "参加案内"
+    duration_ratio: 0.15
+    description: "参加方法や申し込み情報の案内"
+voice_settings:
+  emotion: "enthusiastic"
+  speed: 1.05
+  pitch: 1.0
+  volume: 1.0

@@ -2,6 +2,7 @@ from typing import Dict, List, Optional
 import yaml
 import json
 import logging
+import os
 from datetime import datetime
 from app.models.script import Script, Scene, VoiceSettings, ScriptMetadata
 
@@ -11,6 +12,8 @@ class ScriptGenerator:
     def __init__(self, claude_client):
         self.claude = claude_client
         self.default_voice_settings = VoiceSettings()
+        # テンプレートディレクトリのパスを設定
+        self.template_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "template_scenario")
     
     async def generate(self, summary: str, scenario_type: str, target_duration: int = 60, title: Optional[str] = None) -> Dict:
         """
@@ -61,40 +64,94 @@ class ScriptGenerator:
             raise Exception(f"Failed to generate script: {str(e)}")
     
     def _load_template(self, scenario_type: str) -> Dict:
-        """シナリオテンプレートを読み込み"""
-        templates = {
-            "product_introduction": {
-                "name": "製品紹介",
-                "structure": [
-                    {"section": "opening", "name": "オープニング", "duration_ratio": 0.15},
-                    {"section": "problem", "name": "課題提示", "duration_ratio": 0.25},
-                    {"section": "solution", "name": "解決策", "duration_ratio": 0.45},
-                    {"section": "cta", "name": "行動喚起", "duration_ratio": 0.15}
-                ],
-                "voice_settings": {"emotion": "confident", "speed": 1.0}
-            },
-            "tutorial": {
-                "name": "チュートリアル",
-                "structure": [
-                    {"section": "intro", "name": "導入", "duration_ratio": 0.1},
-                    {"section": "overview", "name": "概要説明", "duration_ratio": 0.2},
-                    {"section": "steps", "name": "手順説明", "duration_ratio": 0.6},
-                    {"section": "conclusion", "name": "まとめ", "duration_ratio": 0.1}
-                ],
-                "voice_settings": {"emotion": "friendly", "speed": 0.95}
-            },
-            "feature_explanation": {
-                "name": "機能説明",
-                "structure": [
-                    {"section": "intro", "name": "導入", "duration_ratio": 0.2},
-                    {"section": "features", "name": "機能詳細", "duration_ratio": 0.6},
-                    {"section": "benefits", "name": "利点・効果", "duration_ratio": 0.2}
-                ],
-                "voice_settings": {"emotion": "informative", "speed": 1.0}
-            }
-        }
+        """シナリオテンプレートをYAMLファイルから読み込み"""
+        try:
+            template_file = os.path.join(self.template_dir, f"{scenario_type}.yaml")
+            
+            # テンプレートファイルが存在するかチェック
+            if not os.path.exists(template_file):
+                logger.warning(f"Template file not found: {template_file}, using default")
+                return self._get_default_template()
+            
+            # YAMLファイルを読み込み
+            with open(template_file, 'r', encoding='utf-8') as f:
+                template = yaml.safe_load(f)
+            
+            # テンプレートの妥当性をチェック
+            if not self._validate_template(template):
+                logger.warning(f"Invalid template format in {template_file}, using default")
+                return self._get_default_template()
+            
+            logger.info(f"Successfully loaded template: {scenario_type}")
+            return template
+            
+        except Exception as e:
+            logger.error(f"Failed to load template {scenario_type}: {str(e)}")
+            return self._get_default_template()
+    
+    def _validate_template(self, template: Dict) -> bool:
+        """テンプレートの妥当性をチェック"""
+        required_fields = ['name', 'structure', 'voice_settings']
         
-        return templates.get(scenario_type, templates["product_introduction"])
+        # 必須フィールドのチェック
+        for field in required_fields:
+            if field not in template:
+                return False
+        
+        # 構造の妥当性チェック
+        if not isinstance(template['structure'], list):
+            return False
+        
+        for section in template['structure']:
+            if not all(key in section for key in ['section', 'name', 'duration_ratio']):
+                return False
+            if not isinstance(section['duration_ratio'], (int, float)):
+                return False
+        
+        # 時間配分の合計が1.0に近いかチェック
+        total_ratio = sum(section['duration_ratio'] for section in template['structure'])
+        if abs(total_ratio - 1.0) > 0.1:  # 10%の誤差を許容
+            logger.warning(f"Template duration ratios sum to {total_ratio}, expected ~1.0")
+        
+        return True
+    
+    def _get_default_template(self) -> Dict:
+        """デフォルトテンプレートを返す"""
+        return {
+            "name": "基本構成",
+            "structure": [
+                {"section": "opening", "name": "オープニング", "duration_ratio": 0.2},
+                {"section": "main", "name": "メイン", "duration_ratio": 0.6},
+                {"section": "closing", "name": "クロージング", "duration_ratio": 0.2}
+            ],
+            "voice_settings": {"emotion": "neutral", "speed": 1.0, "pitch": 1.0, "volume": 1.0}
+        }
+    
+    def get_available_templates(self) -> Dict:
+        """利用可能なテンプレート一覧を取得"""
+        try:
+            index_file = os.path.join(self.template_dir, "index.yaml")
+            
+            if not os.path.exists(index_file):
+                # index.yamlがない場合は、ディレクトリからテンプレートを検索
+                templates = {}
+                if os.path.exists(self.template_dir):
+                    for file in os.listdir(self.template_dir):
+                        if file.endswith('.yaml') and file != 'index.yaml':
+                            template_id = file[:-5]  # .yamlを除去
+                            templates[template_id] = {
+                                "file": file,
+                                "category": "その他",
+                                "tags": []
+                            }
+                return {"templates": templates}
+            
+            with open(index_file, 'r', encoding='utf-8') as f:
+                return yaml.safe_load(f)
+                
+        except Exception as e:
+            logger.error(f"Failed to load template index: {str(e)}")
+            return {"templates": {}}
     
     def _create_generation_prompt(self, summary: str, template: Dict, target_duration: int) -> str:
         """台本生成用プロンプトを作成"""
