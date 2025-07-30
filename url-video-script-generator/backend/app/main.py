@@ -11,12 +11,12 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="URL Video Script Generator", version="1.0.0")
 
-# CORS設定
+# CORS設定（デバッグ用により寛容に設定）
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # React開発サーバー
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_origins=["*"],  # 一時的にすべてのオリジンを許可
+    allow_credentials=False,  # 一時的にcredentialsを無効化
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -46,4 +46,4 @@ async def shutdown_event():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=settings.BACKEND_PORT)

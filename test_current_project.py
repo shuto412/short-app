@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-実際のプロジェクトデータを使用したsummary.yaml再生成テスト
+現在のプロジェクトデータでsummary.yaml再生成テスト
 """
 
 import asyncio
@@ -11,9 +11,9 @@ import yaml
 # パス追加
 sys.path.append('backend')
 
-async def test_actual_project_summary():
-    """実際のプロジェクトデータでsummary.yamlを再生成"""
-    print("🔄 実際のプロジェクトデータでsummary.yaml再生成テスト開始...")
+async def test_current_project_summary():
+    """現在のプロジェクトデータでsummary.yamlを再生成"""
+    print("🔄 現在のプロジェクトでsummary.yaml再生成テスト開始...")
     
     try:
         from app.modules.summarizer import ClaudeClient
@@ -21,14 +21,15 @@ async def test_actual_project_summary():
         from datetime import datetime
         
         # 実際に存在するプロジェクトID
-        project_id = "403f6340-a990-410b-ab2d-e2453a37b5d5"
+        project_id = "0ac29b60-ac51-4a11-bc78-bcb98b33574f"
         
         # ファイル管理とClaude clientの初期化
         file_manager = FileManager()
-        # DATA_DIRを正しく設定（テスト環境用）
+        # DATA_DIRを正しく設定
         file_manager.base_dir = "./DATA"
         
         claude_client = ClaudeClient()
+        print("✅ ClaudeClient初期化成功")
         
         print(f"📖 プロジェクト {project_id} のスクレイピング内容を読み込み中...")
         
@@ -38,7 +39,7 @@ async def test_actual_project_summary():
         print(f"📝 スクレイピング内容の一部: {scraped_content[:100]}...")
         
         # 構造化要約を生成
-        print("🧠 改善されたLLMプロンプトで構造化要約を生成中...")
+        print("🧠 Claude APIで構造化要約を生成中...")
         structured_summary = await claude_client.create_structured_summary(scraped_content)
         
         # 結果の詳細表示
@@ -69,20 +70,15 @@ async def test_actual_project_summary():
         summary_data = {
             "metadata": {
                 "project_id": project_id,
-                "url": "https://jp.pulsar.gg/collections/mice/products/xlite-crazylight-gaming-mouse?variant=50631960363301",
+                "url": "https://jp.pulsar.gg/collections/mice/products/x3-lhd-gaming-mouse",
                 "generated_at": datetime.now().isoformat(),
                 "content_length": len(scraped_content),
                 "updated": True,
-                "previous_error": "構造化要約生成失敗またはClaude client未初期化",
-                "fixed": True
+                "claude_api_working": True,
+                "regenerated": True
             },
             "product_info": structured_summary
         }
-        
-        # 新しい summary.yaml を保存
-        print(f"\n💾 新しいsummary.yamlを保存中...")
-        await file_manager.save_file(project_id, "summary_fixed.yaml", summary_data)
-        print("✅ summary_fixed.yaml 保存完了")
         
         # 古いsummary.yamlと比較
         print("\n📊 改善前後の比較:")
@@ -103,10 +99,8 @@ async def test_actual_project_summary():
         except Exception as e:
             print(f"⚠️  古いsummary.yamlの読み込みに失敗: {str(e)}")
         
-        # 元のsummary.yamlを置き換えるかユーザーに確認
-        print(f"\n❓ 元のsummary.yamlを新しいバージョンで置き換えますか？ (y/n)")
-        # 自動的に置き換える（テスト環境）
-        print("🔄 自動的に置き換えます...")
+        # 新しい summary.yaml を保存
+        print(f"\n💾 新しいsummary.yamlを保存中...")
         await file_manager.save_file(project_id, "summary.yaml", summary_data)
         print("✅ summary.yaml を更新しました")
         
@@ -121,10 +115,10 @@ async def test_actual_project_summary():
 async def main():
     """メインテスト関数"""
     print("=" * 60)
-    print("🚀 新しいプロジェクトでsummary.yaml再生成テスト")
+    print("🚀 現在のプロジェクトでsummary.yaml再生成テスト")
     print("=" * 60)
     
-    result = await test_actual_project_summary()
+    result = await test_current_project_summary()
     
     print("\n" + "=" * 60)
     print("📊 テスト結果")

@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = 'http://localhost:8080/api';
 
 export interface ProjectCreate {
   url: string;
@@ -28,26 +28,54 @@ export interface VoiceActor {
   description?: string;
 }
 
-export const projectAPI = {
-  create: async (data: ProjectCreate) => {
-    const response = await fetch(`${API_BASE_URL}/projects`, {
-      method: 'POST',
+// デバッグ用のfetchラッパー
+const debugFetch = async (url: string, options: RequestInit = {}) => {
+  console.log('🌐 API Request:', url, options);
+  
+  try {
+    const response = await fetch(url, {
+      ...options,
       headers: {
         'Content-Type': 'application/json',
+        ...options.headers,
       },
+    });
+    
+    console.log('✅ API Response:', response.status, response.statusText);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    console.log('📦 API Data:', data);
+    return data;
+    
+  } catch (error) {
+    console.error('❌ API Error:', error);
+    console.error('🔧 Debug Info:', {
+      url,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    });
+    throw error;
+  }
+};
+
+export const projectAPI = {
+  create: async (data: ProjectCreate) => {
+    return await debugFetch(`${API_BASE_URL}/projects`, {
+      method: 'POST',
       body: JSON.stringify(data),
     });
-    return response.json();
   },
   
   get: async (projectId: string) => {
-    const response = await fetch(`${API_BASE_URL}/projects/${projectId}`);
-    return response.json();
+    return await debugFetch(`${API_BASE_URL}/projects/${projectId}`);
   },
   
   getStatus: async (projectId: string) => {
-    const response = await fetch(`${API_BASE_URL}/projects/${projectId}/status`);
-    return response.json();
+    return await debugFetch(`${API_BASE_URL}/projects/${projectId}/status`);
   },
 };
 
@@ -58,21 +86,20 @@ export const generationAPI = {
       ...(voiceActorId && { voice_actor_id: voiceActorId })
     });
     
-    const response = await fetch(`${API_BASE_URL}/generate/process?${params}`, {
+    return await debugFetch(`${API_BASE_URL}/generate/process?${params}`, {
       method: 'POST',
     });
-    return response.json();
   },
   
   getScenarios: async () => {
-    const response = await fetch(`${API_BASE_URL}/generate/scenarios`);
-    const data = await response.json();
+    console.log('🎬 Getting scenarios...');
+    const data = await debugFetch(`${API_BASE_URL}/generate/scenarios`);
     return data.scenarios || [];
   },
   
   getVoiceActors: async () => {
-    const response = await fetch(`${API_BASE_URL}/generate/voice-actors`);
-    const data = await response.json();
+    console.log('🎤 Getting voice actors...');
+    const data = await debugFetch(`${API_BASE_URL}/generate/voice-actors`);
     return data.voice_actors || [];
   },
   

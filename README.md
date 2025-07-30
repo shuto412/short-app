@@ -313,7 +313,7 @@ MIT License
 
 ```bash
 # 1. バックエンド起動
-cd url-video-script-generator/backend && source venv/bin/activate && uvicorn app.main:app --reload
+cd url-video-script-generator/backend && python -m uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload
 
 # 2. フロントエンド起動（新しいターミナル）
 cd url-video-script-generator/frontend && npm start
