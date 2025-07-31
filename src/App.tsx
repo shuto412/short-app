@@ -3,10 +3,11 @@ import { Container, CssBaseline, ThemeProvider, createTheme } from '@mui/materia
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { UrlInput } from './components/UrlInput';
 import { ScenarioSelector } from './components/ScenarioSelector';
+import { VoiceActorSelector } from './components/VoiceActorSelector';
 import { ProgressDisplay } from './components/ProgressDisplay';
 import { ResultViewer } from './components/ResultViewer';
 import { projectAPI, generationAPI } from './services/api';
-import type { AppState, Scenario, VoiceActor, Project, GeneratedFile } from './types';
+import type { AppState, Scenario, VoiceActor, Project, GeneratedFile, VoiceSettings } from './types';
 
 // React Query クライアント設定
 const queryClient = new QueryClient({
@@ -42,6 +43,8 @@ function App() {
   const [scenarioType, setScenarioType] = useState<string>('');
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [voiceActors, setVoiceActors] = useState<VoiceActor[]>([]);
+  const [selectedVoiceActorId, setSelectedVoiceActorId] = useState<string>('');
+  const [voiceSpeed, setVoiceSpeed] = useState<number>(1.5);
   const [project, setProject] = useState<Project | null>(null);
   const [files, setFiles] = useState<GeneratedFile[]>([]);
   const [processingStatus, setProcessingStatus] = useState<any>(null);
@@ -151,12 +154,28 @@ function App() {
 
   const handleScenarioSelect = async (selectedScenarioType: string) => {
     setScenarioType(selectedScenarioType);
+    // デフォルトボイスアクターを設定
+    if (voiceActors.length > 0 && !selectedVoiceActorId) {
+      setSelectedVoiceActorId(voiceActors[0].id);
+    }
+    setAppState('voice-settings');
+  };
+
+  const handleVoiceActorSelect = (voiceActorId: string) => {
+    setSelectedVoiceActorId(voiceActorId);
+  };
+
+  const handleVoiceSpeedChange = (speed: number) => {
+    setVoiceSpeed(speed);
+  };
+
+  const handleStartProcessing = async () => {
     setIsLoading(true);
     setError('');
 
     try {
       // 処理開始
-      await generationAPI.process(projectId, voiceActors[0]?.id);
+      await generationAPI.process(projectId, selectedVoiceActorId, voiceSpeed);
       setAppState('processing');
     } catch (error: any) {
       setError(error.message || '処理の開始に失敗しました');
@@ -171,6 +190,8 @@ function App() {
     setProjectId('');
     setUrl('');
     setScenarioType('');
+    setSelectedVoiceActorId('');
+    setVoiceSpeed(1.5);
     setProject(null);
     setFiles([]);
     setProcessingStatus(null);
@@ -196,6 +217,19 @@ function App() {
             scenarios={scenarios}
             selectedScenario={scenarioType}
             onSelect={handleScenarioSelect}
+            isLoading={isLoading}
+          />
+        );
+
+      case 'voice-settings':
+        return (
+          <VoiceActorSelector
+            voiceActors={voiceActors}
+            selectedVoiceActorId={selectedVoiceActorId}
+            selectedSpeed={voiceSpeed}
+            onSelect={handleVoiceActorSelect}
+            onSpeedChange={handleVoiceSpeedChange}
+            onNext={handleStartProcessing}
             isLoading={isLoading}
           />
         );

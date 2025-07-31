@@ -115,7 +115,8 @@ async def get_voice_actors():
 async def process_full(
     project_id: str,
     background_tasks: BackgroundTasks,
-    voice_actor_id: Optional[str] = None
+    voice_actor_id: Optional[str] = None,
+    voice_speed: Optional[float] = 1.0
 ):
     """フル処理実行"""
     if project_id not in projects_db:
@@ -130,8 +131,9 @@ async def process_full(
             logger.info(f"Starting project processing: {project_id}")
             update_project_status(project_id, "processing")
             
-            # voice_actor_idをローカル変数として初期化（外側の関数パラメータから値をコピー）
+            # パラメータをローカル変数として初期化（外側の関数パラメータから値をコピー）
             selected_voice_actor_id = voice_actor_id
+            selected_voice_speed = voice_speed or 1.0
             
             # 1. スクレイピング
             scraped_content = await scraper.scrape(project.url)
@@ -252,7 +254,7 @@ async def process_full(
                     
                 logger.info(f"🎯 最終選択されたID: {selected_voice_actor_id} (取得数: {len(voice_actors)})")
             
-            voice_prompt = voice_generator.create_voice_prompt(script, selected_voice_actor_id)
+            voice_prompt = voice_generator.create_voice_prompt(script, selected_voice_actor_id, selected_voice_speed)
             await file_manager.save_file(project_id, "voice_prompt.yaml", voice_prompt)
             
             # 個別音声ファイル生成

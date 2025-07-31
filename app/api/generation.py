@@ -30,7 +30,7 @@ voice_generator = VoiceGenerator()
 subtitle_generator = SubtitleGenerator()
 file_manager = FileManager()
 
-async def process_project_task(project_id: str, url: str, scenario_type: str, voice_actor_id: str = None):
+async def process_project_task(project_id: str, url: str, scenario_type: str, voice_actor_id: str = None, voice_speed: float = 1.0):
     """バックグラウンドでプロジェクト処理を実行"""
     try:
         logger.info(f"Starting project processing: {project_id}")
@@ -72,7 +72,7 @@ async def process_project_task(project_id: str, url: str, scenario_type: str, vo
         
         # 5. 音声生成用プロンプト作成
         logger.info("Step 4: Creating voice prompt")
-        voice_prompt = voice_generator.create_voice_prompt(script, voice_actor_id)
+        voice_prompt = voice_generator.create_voice_prompt(script, voice_actor_id, voice_speed)
         await file_manager.save_file(project_id, "voice_prompt.yaml", voice_prompt)
         
         # 6. 音声生成
@@ -109,7 +109,8 @@ async def process_project_task(project_id: str, url: str, scenario_type: str, vo
 async def process_full(
     project_id: str,
     background_tasks: BackgroundTasks,
-    voice_actor_id: Optional[str] = None
+    voice_actor_id: Optional[str] = None,
+    voice_speed: Optional[float] = 1.0
 ):
     """フル処理実行"""
     if project_id not in projects_db:
@@ -123,7 +124,8 @@ async def process_full(
         project_id,
         project.url,
         project.scenario_type,
-        voice_actor_id
+        voice_actor_id,
+        voice_speed
     )
     
     return {

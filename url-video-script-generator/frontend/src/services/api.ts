@@ -80,10 +80,11 @@ export const projectAPI = {
 };
 
 export const generationAPI = {
-  process: async (projectId: string, voiceActorId?: string) => {
+  process: async (projectId: string, voiceActorId?: string, voiceSpeed?: number) => {
     const params = new URLSearchParams({
       project_id: projectId,
-      ...(voiceActorId && { voice_actor_id: voiceActorId })
+      ...(voiceActorId && { voice_actor_id: voiceActorId }),
+      ...(voiceSpeed && { voice_speed: voiceSpeed.toString() })
     });
     
     return await debugFetch(`${API_BASE_URL}/generate/process?${params}`, {

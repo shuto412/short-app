@@ -138,13 +138,13 @@ class VoiceGenerator:
             connector = aiohttp.TCPConnector(ssl=False)
             async with aiohttp.ClientSession(connector=connector) as session:
                 
-                # デフォルトパラメータ（Nijivoice API公式仕様に修正）
+                # デフォルトパラメータ（Nijivoice API公式仕様準拠）
                 data = {
-                    "script": text,
+                    "script": text,  # 公式仕様: "text"ではなく"script"を使用
                     "format": "wav",
-                    "speed": "1.0",
-                    "emotionalLevel": "0.1",
-                    "soundDuration": "0.1"
+                    "speed": "1.0",              # 公式仕様: 文字列として設定
+                    "emotionalLevel": "0.1",     # 公式仕様: 感情レベル（0〜1.5）
+                    "soundDuration": "0.1"       # 公式仕様: 音素の長さ（0〜1.7）
                 }
                 
                 # オプションパラメータがあれば上書き（数値を文字列に変換）
@@ -308,7 +308,7 @@ class VoiceGenerator:
             # エラー時は空のリストを返す
             return []
     
-    def create_voice_prompt(self, script: Dict, voice_actor_id: str) -> Dict:
+    def create_voice_prompt(self, script: Dict, voice_actor_id: str, voice_speed: float = 1.0) -> Dict:
         """スクリプトから音声生成用プロンプトを作成"""
         segments = []
         current_time = 0.0
@@ -320,7 +320,7 @@ class VoiceGenerator:
                 "start_time": current_time,
                 "end_time": current_time + scene["duration"],
                 "parameters": {
-                    "speed": scene.get("voice_settings", {}).get("speed", 1.0),
+                    "speed": voice_speed,  # ユーザーが指定した速度を使用
                     "pitch": scene.get("voice_settings", {}).get("pitch", 0),
                     "volume": 1.0,
                     "pauseLength": 0.8,

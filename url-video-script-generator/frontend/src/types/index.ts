@@ -30,6 +30,16 @@ export interface VoiceActor {
   description?: string;
 }
 
+export interface VoiceActorSelectorProps {
+  voiceActors: VoiceActor[];
+  selectedVoiceActorId?: string;
+  selectedSpeed?: number;
+  onSelect: (voiceActorId: string) => void;
+  onSpeedChange?: (speed: number) => void;
+  onNext?: () => void;
+  isLoading?: boolean;
+}
+
 export interface GeneratedFile {
   name: string;
   type: string;

@@ -42,6 +42,7 @@ function App() {
   const [url, setUrl] = useState<string>('');
   const [scenarioType, setScenarioType] = useState<string>('');
   const [selectedVoiceActorId, setSelectedVoiceActorId] = useState<string>('231e0170-0ece-4155-be44-231423062f41');
+  const [voiceSpeed, setVoiceSpeed] = useState<number>(1.5);
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [voiceActors, setVoiceActors] = useState<VoiceActor[]>([]);
   const [project, setProject] = useState<Project | null>(null);
@@ -160,13 +161,17 @@ function App() {
     setSelectedVoiceActorId(voiceActorId);
   };
 
+  const handleVoiceSpeedChange = (speed: number) => {
+    setVoiceSpeed(speed);
+  };
+
   const handleStartProcessing = async () => {
     setIsLoading(true);
     setError('');
 
     try {
       // 処理開始
-      await generationAPI.process(projectId, selectedVoiceActorId);
+      await generationAPI.process(projectId, selectedVoiceActorId, voiceSpeed);
       setAppState('processing');
     } catch (error: any) {
       setError(error.message || '処理の開始に失敗しました');
@@ -182,6 +187,7 @@ function App() {
     setUrl('');
     setScenarioType('');
     setSelectedVoiceActorId('231e0170-0ece-4155-be44-231423062f41');
+    setVoiceSpeed(1.5);
     setProject(null);
     setFiles([]);
     setProcessingStatus(null);
@@ -216,7 +222,9 @@ function App() {
           <VoiceActorSelector
             voiceActors={voiceActors}
             selectedVoiceActorId={selectedVoiceActorId}
+            selectedSpeed={voiceSpeed}
             onSelect={handleVoiceActorSelect}
+            onSpeedChange={handleVoiceSpeedChange}
             onNext={handleStartProcessing}
             isLoading={isLoading}
           />

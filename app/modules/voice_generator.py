@@ -56,21 +56,28 @@ class VoiceGenerator:
                     "Content-Type": "application/json"
                 }
                 
-                # デフォルトパラメータ
+                # デフォルトパラメータ（Nijivoice API公式仕様準拠）
                 data = {
-                    "text": text,
+                    "script": text,  # 公式仕様: "text"ではなく"script"を使用
                     "format": "wav",
-                    "speed": 1.0,
-                    "volume": 1.0,
-                    "pitch": 0,
-                    "pauseLength": 0.8,
-                    "pauseLengthSentence": 1.0,
-                    "intonation": 1.0
+                    "speed": "1.0",              # 公式仕様: 文字列として設定
+                    "emotionalLevel": "0.1",     # 公式仕様: 感情レベル（0〜1.5）
+                    "soundDuration": "0.1"       # 公式仕様: 音素の長さ（0〜1.7）
                 }
                 
-                # オプションパラメータがあれば上書き
+                # オプションパラメータがあれば上書き（数値を文字列に変換）
                 if options:
-                    data.update(options)
+                    # Nijivoice APIは数値パラメータを文字列で要求するため変換
+                    string_options = {}
+                    for key, value in options.items():
+                        if isinstance(value, (int, float)):
+                            string_options[key] = str(value)
+                        else:
+                            string_options[key] = value
+                    data.update(string_options)
+                
+                logger.info(f"🎵 音声生成 API 呼び出し: {voice_actor_id} - {text[:30]}...")
+                logger.debug(f"📊 最終パラメータ: {data}")
                 
                 async with session.post(
                     f"{self.base_url}/voice-actors/{voice_actor_id}/generate-voice",
@@ -120,7 +127,7 @@ class VoiceGenerator:
             logger.error(f"Script audio generation failed: {str(e)}")
             return self._generate_mock_audio("音声生成に失敗しました")
     
-    def create_voice_prompt(self, script: Dict, voice_actor_id: str) -> Dict:
+    def create_voice_prompt(self, script: Dict, voice_actor_id: str, voice_speed: float = 1.0) -> Dict:
         """スクリプトから音声生成用プロンプトを作成"""
         segments = []
         current_time = 0.0
@@ -132,7 +139,7 @@ class VoiceGenerator:
                 "start_time": current_time,
                 "end_time": current_time + scene["duration"],
                 "parameters": {
-                    "speed": scene.get("voice_settings", {}).get("speed", 1.0),
+                    "speed": voice_speed,  # ユーザーが指定した速度を使用
                     "pitch": scene.get("voice_settings", {}).get("pitch", 0),
                     "volume": 1.0,
                     "pauseLength": 0.8,

@@ -30,6 +30,11 @@ export interface VoiceActor {
   description?: string;
 }
 
+export interface VoiceSettings {
+  speed: number;
+  voiceActorId: string;
+}
+
 export interface GeneratedFile {
   name: string;
   type: string;
@@ -41,6 +46,16 @@ export interface UrlInputProps {
   onSubmit: (url: string) => void;
   isLoading?: boolean;
   error?: string;
+}
+
+export interface VoiceActorSelectorProps {
+  voiceActors: VoiceActor[];
+  selectedVoiceActorId?: string;
+  selectedSpeed?: number;
+  onSelect: (voiceActorId: string) => void;
+  onSpeedChange?: (speed: number) => void;
+  onNext?: () => void;
+  isLoading?: boolean;
 }
 
 export interface ScenarioSelectorProps {
@@ -66,5 +81,6 @@ export interface ResultViewerProps {
 export type AppState = 
   | 'url-input'
   | 'scenario-selection'
+  | 'voice-settings'
   | 'processing'
   | 'result'; 
