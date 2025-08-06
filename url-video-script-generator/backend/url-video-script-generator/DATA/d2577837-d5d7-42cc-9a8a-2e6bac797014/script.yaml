@@ -1,0 +1,41 @@
+metadata:
+  created_at: '2025-08-06T21:41:46.064454'
+  project_id: d2577837-d5d7-42cc-9a8a-2e6bac797014
+  scenario_type: product_introduction
+  title: 「驚異の軽量!最速ゲームマウス」
+  total_duration: 60
+scenes:
+- duration: 9.0
+  scene_id: 1
+  scene_type: opening
+  text: みなさん、こんにちは。今日は驚きの軽さを実現したゲーミングマウス、Xlite Crazyを紹介させていただきます。
+  voice_settings:
+    emotion: cheerful
+    pitch: 1.0
+    speed: 1.0
+- duration: 15.0
+  scene_id: 2
+  scene_type: problem
+  text: 長時間のゲームプレイでは、通常のマウスだと手の疲労が気になりませんか?重さのあるマウスを長時間操作していると、手首やマウス掴む部分が痛くなってきますよね。そうした問題を解決するのがXlite
+    Crazyです。
+  voice_settings:
+    emotion: serious
+    pitch: 1.0
+    speed: 1.0
+- duration: 27.0
+  scene_id: 3
+  scene_type: solution
+  text: Xlite Crazyは驚きの軽さ41gを実現しながら、高性能な機能も備えています。人間工学に基づいた設計で快適性と精密な操作性を発揮。XS-1フラッグシップセンサーを搭載し、32,000DPIと750IPSの高性能を実現。さらに最大8KHzのポーリングレートに対応し、瞬時の反応速度を実現します。耐久性にも優れた光学スイッチを採用しているので、1億回のクリック耐久性も誇ります。軽量でありながら高性能、そして耐久性にも優れているXlite
+    Crazyは、まさに究極のゲーミングマウスと言えるでしょう。
+  voice_settings:
+    emotion: excited
+    pitch: 1.0
+    speed: 1.0
+- duration: 9.0
+  scene_id: 4
+  scene_type: cta
+  text: この機会にぜひXlite Crazyをお試しください。あなたのゲームプレイを新しいレベルへと引き上げてくれるはずです。
+  voice_settings:
+    emotion: cheerful
+    pitch: 1.0
+    speed: 1.0

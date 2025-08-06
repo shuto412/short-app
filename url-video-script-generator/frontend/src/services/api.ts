@@ -129,3 +129,52 @@ export const generationAPI = {
     return `${API_BASE_URL}/generate/download/${projectId}/segments/${filename}`;
   },
 }; 
+
+export const stageAPI = {
+  getScript: async (projectId: string) => {
+    return await debugFetch(`${API_BASE_URL}/stages/${projectId}/script`);
+  },
+  
+  saveScript: async (projectId: string, script: any) => {
+    return await debugFetch(`${API_BASE_URL}/stages/${projectId}/script`, {
+      method: 'PUT',
+      body: JSON.stringify(script),
+    });
+  },
+  
+  getVoicePrompt: async (projectId: string) => {
+    return await debugFetch(`${API_BASE_URL}/stages/${projectId}/voice-prompt`);
+  },
+  
+  saveVoicePrompt: async (projectId: string, voicePrompt: any) => {
+    return await debugFetch(`${API_BASE_URL}/stages/${projectId}/voice-prompt`, {
+      method: 'PUT',
+      body: JSON.stringify(voicePrompt),
+    });
+  },
+  
+  batchUpdateVoiceParameters: async (projectId: string, parameters: any) => {
+    return await debugFetch(`${API_BASE_URL}/stages/${projectId}/voice-prompt/batch-update`, {
+      method: 'POST',
+      body: JSON.stringify(parameters),
+    });
+  },
+  
+  previewVoiceSegment: async (projectId: string, segmentId: number) => {
+    return await debugFetch(`${API_BASE_URL}/stages/${projectId}/voice-prompt/preview/${segmentId}`, {
+      method: 'POST',
+    });
+  },
+  
+  previewSegment: async (projectId: string, segmentId: number) => {
+    return await debugFetch(`${API_BASE_URL}/stages/${projectId}/preview/${segmentId}`, {
+      method: 'POST',
+    });
+  },
+  
+  resetVoicePrompt: async (projectId: string) => {
+    return await debugFetch(`${API_BASE_URL}/stages/${projectId}/voice-prompt/reset`, {
+      method: 'POST',
+    });
+  },
+}; 
