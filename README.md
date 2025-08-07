@@ -71,7 +71,7 @@ NIJIVOICE_API_KEY=your_nijivoice_api_key_here
 
 # サーバー設定
 BACKEND_PORT=8080
-DATA_DIR=../DATA
+DATA_DIR=../../DATA
 
 # ファイル設定
 MAX_FILE_SIZE=100MB

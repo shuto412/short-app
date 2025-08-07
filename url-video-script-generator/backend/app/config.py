@@ -37,7 +37,23 @@ class Settings:
     def __init__(self):
         self.CLAUDE_API_KEY = os.getenv("CLAUDE_API_KEY")
         self.NIJIVOICE_API_KEY = os.getenv("NIJIVOICE_API_KEY")
-        self.DATA_DIR = os.getenv("DATA_DIR", "../DATA")
+        
+        # DATA_DIRの設定とデバッグ情報
+        data_dir_env = os.getenv("DATA_DIR")
+        if data_dir_env:
+            self.DATA_DIR = data_dir_env
+            print(f"📁 DATA_DIR from env: {data_dir_env}")
+        else:
+            self.DATA_DIR = "../../DATA"
+            print(f"🔧 DATA_DIR default: {self.DATA_DIR}")
+        
+        # 絶対パスでの解決を確認
+        current_dir = os.getcwd()
+        absolute_data_dir = os.path.abspath(self.DATA_DIR)
+        print(f"🔧 Current working directory: {current_dir}")
+        print(f"📁 DATA_DIR relative: {self.DATA_DIR}")
+        print(f"📁 DATA_DIR absolute: {absolute_data_dir}")
+        
         self.MAX_FILE_SIZE = 100 * 1024 * 1024  # 100MB
         self.BACKEND_PORT = int(os.getenv("BACKEND_PORT", 8080))
         
@@ -49,7 +65,7 @@ class Settings:
             print("   2. 以下の内容を追加:")
             print("      CLAUDE_API_KEY=your_actual_api_key")
             print("      NIJIVOICE_API_KEY=your_nijivoice_api_key")
-            print("      DATA_DIR=../DATA")
+            print("      DATA_DIR=../../DATA")
             print("   3. バックエンドサーバーを再起動")
             print("💡 または環境変数として設定:")
             print("   export CLAUDE_API_KEY=your_actual_api_key")

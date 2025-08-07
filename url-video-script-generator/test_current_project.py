@@ -26,7 +26,7 @@ async def test_current_project_summary():
         # ファイル管理とClaude clientの初期化
         file_manager = FileManager()
         # DATA_DIRを正しく設定
-        file_manager.base_dir = "./DATA"
+        file_manager.base_dir = "../../DATA"
         
         claude_client = ClaudeClient()
         print("✅ ClaudeClient初期化成功")

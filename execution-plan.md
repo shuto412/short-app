@@ -102,7 +102,7 @@ load_dotenv()
 class Settings:
     CLAUDE_API_KEY = os.getenv("CLAUDE_API_KEY")
     NIJIVOICE_API_KEY = os.getenv("NIJIVOICE_API_KEY")
-    DATA_DIR = os.getenv("DATA_DIR", "./DATA")
+    DATA_DIR = os.getenv("DATA_DIR", "../../DATA")
     MAX_FILE_SIZE = 100 * 1024 * 1024  # 100MB
     BACKEND_PORT = int(os.getenv("BACKEND_PORT", 8080))
     
@@ -113,7 +113,7 @@ settings = Settings()
 """
 CLAUDE_API_KEY=your_key_here
 NIJIVOICE_API_KEY=your_key_here
-DATA_DIR=../DATA
+DATA_DIR=../../DATA
 BACKEND_PORT=8080
 """
 ```

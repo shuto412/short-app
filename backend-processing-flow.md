@@ -323,7 +323,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8080
 ```bash
 CLAUDE_API_KEY=your_claude_api_key
 NIJIVOICE_API_KEY=your_nijivoice_api_key
-DATA_DIR=../DATA
+DATA_DIR=../../DATA
 BACKEND_PORT=8080
 ```
 
