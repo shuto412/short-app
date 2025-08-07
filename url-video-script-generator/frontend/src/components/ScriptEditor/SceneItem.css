@@ -1,0 +1,167 @@
+/* 個別シーンコンポーネントのスタイル */
+.scene-item {
+  background-color: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.scene-item:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.scene-item-edited {
+  border-left: 4px solid #007bff;
+  background-color: #f8f9ff;
+}
+
+.scene-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.scene-item-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.scene-number {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 1.1rem;
+}
+
+.scene-type {
+  background-color: #e9ecef;
+  color: #495057;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.scene-duration {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.scene-edited-badge {
+  background-color: #007bff;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.scene-item-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.scene-item-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.scene-text h4,
+.scene-voice-settings h4 {
+  margin: 0 0 0.5rem 0;
+  color: #2c3e50;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.scene-text p {
+  margin: 0;
+  color: #495057;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.voice-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.voice-setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0;
+}
+
+.setting-label {
+  color: #6c757d;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.setting-value {
+  color: #495057;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* 小さいボタンスタイル */
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 768px) {
+  .scene-item {
+    padding: 1rem;
+  }
+
+  .scene-item-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .scene-item-info {
+    justify-content: space-between;
+  }
+
+  .scene-item-content {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .voice-settings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .scene-item-actions {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .scene-item-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .scene-item-actions {
+    width: 100%;
+  }
+
+  .scene-item-actions .btn {
+    flex: 1;
+  }
+} 
