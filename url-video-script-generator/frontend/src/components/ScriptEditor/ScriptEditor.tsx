@@ -33,7 +33,7 @@ const ScriptEditor: React.FC<EditableScriptEditorProps> = ({
   };
 
   const handleSceneUpdate = (sceneId: number, updates: Partial<EditableScene>) => {
-    const updatedScenes = script.scenes.map(scene => 
+    const updatedScenes = script.scenes.map((scene: EditableScene) => 
       scene.scene_id === sceneId 
         ? { ...scene, ...updates, is_edited: true }
         : scene
@@ -42,24 +42,26 @@ const ScriptEditor: React.FC<EditableScriptEditorProps> = ({
   };
 
   const handleSceneDelete = (sceneId: number) => {
-    const updatedScenes = script.scenes.filter(scene => scene.scene_id !== sceneId);
+    const updatedScenes = script.scenes.filter((scene: EditableScene) => scene.scene_id !== sceneId);
     setScript({ ...script, scenes: updatedScenes });
   };
 
   const handleSceneAdd = () => {
-    const newSceneId = Math.max(...script.scenes.map(s => s.scene_id), 0) + 1;
+    const newSceneId = Math.max(...script.scenes.map((s: EditableScene) => s.scene_id), 0) + 1;
     const newScene: EditableScene = {
       scene_id: newSceneId,
       scene_type: 'main_content',
       duration: 5.0,
       text: '新しいシーンを追加しました。編集してください。',
       voice_settings: {
+        voice_actor_id: 'default',
         emotion: 'cheerful',
         speed: 1.0,
         pitch: 1.0,
         volume: 1.0,
-        pause_length: 0.8
+        pauseLength: 0.8
       },
+      order: script.scenes.length,
       is_edited: true
     };
     setScript({ ...script, scenes: [...script.scenes, newScene] });
@@ -67,7 +69,7 @@ const ScriptEditor: React.FC<EditableScriptEditorProps> = ({
 
   const handleSceneReorder = (sceneOrder: number[]) => {
     const reorderedScenes = sceneOrder.map(id => 
-      script.scenes.find(scene => scene.scene_id === id)
+      script.scenes.find((scene: EditableScene) => scene.scene_id === id)
     ).filter(Boolean) as EditableScene[];
     setScript({ ...script, scenes: reorderedScenes });
   };
@@ -77,9 +79,9 @@ const ScriptEditor: React.FC<EditableScriptEditorProps> = ({
       {/* ヘッダー */}
       <div className="script-editor-header">
         <div className="project-info">
-          <h2>{script.metadata.title}</h2>
+          <h2>{script.title}</h2>
           <p className="project-details">
-            プロジェクトID: {script.metadata.project_id} | 
+            プロジェクトID: {script.project_id} | 
             シナリオタイプ: {script.metadata.scenario_type} | 
             総時間: {script.metadata.total_duration}秒
           </p>
@@ -134,10 +136,7 @@ const ScriptEditor: React.FC<EditableScriptEditorProps> = ({
       <div className="script-editor-footer">
         <div className="footer-info">
           <span>シーン数: {script.scenes.length}</span>
-          <span>編集済み: {script.metadata.edited ? 'はい' : 'いいえ'}</span>
-          {script.metadata.last_edited && (
-            <span>最終編集: {new Date(script.metadata.last_edited).toLocaleString()}</span>
-          )}
+          <span>編集済み: {hasChanges ? 'はい' : 'いいえ'}</span>
         </div>
         <div className="footer-actions">
           <button 

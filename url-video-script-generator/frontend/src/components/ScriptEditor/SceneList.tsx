@@ -82,7 +82,7 @@ const SceneList: React.FC<SceneListProps> = ({
           </div>
         ) : (
           <div className="scene-items">
-            {scenes.map((scene, index) => (
+            {scenes.map((scene: EditableScene, index: number) => (
               <SceneItem
                 key={scene.scene_id}
                 scene={scene}

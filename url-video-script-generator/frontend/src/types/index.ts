@@ -228,4 +228,79 @@ export interface VoiceSettingsEditorProps {
   onGenerate?: () => void;
   onBack?: () => void;
   isLoading?: boolean;
+}
+
+// スクリプト編集関連の型定義
+export interface EditableScene {
+  scene_id: number;
+  scene_type: 'introduction' | 'main_content' | 'conclusion' | 'transition';
+  text: string;
+  duration: number;
+  voice_settings: EditableVoiceSettings;
+  order: number;
+  is_edited?: boolean;
+}
+
+export interface EditableVoiceSettings {
+  voice_actor_id: string;
+  speed: number;
+  pitch: number;
+  volume: number;
+  emotion?: string;
+  pauseLength?: number;
+  intonation?: number;
+}
+
+export interface EditableScript {
+  project_id: string;
+  title: string;
+  description?: string;
+  metadata: {
+    total_duration: number;
+    scene_count: number;
+    created_at: string;
+    updated_at: string;
+    version?: number;
+    scenario_type?: string;
+  };
+  scenes: EditableScene[];
+}
+
+export interface ScriptEditResponse {
+  success: boolean;
+  message?: string;
+  script?: EditableScript;
+  error?: string;
+}
+
+export interface SceneUpdateRequest {
+  text?: string;
+  voice_settings?: EditableVoiceSettings;
+  duration?: number;
+  scene_type?: 'introduction' | 'main_content' | 'conclusion' | 'transition';
+}
+
+export interface SceneAddRequest {
+  scene: EditableScene;
+}
+
+export interface SceneReorderRequest {
+  scene_order: number[];
+}
+
+export interface EditableScriptEditorProps {
+  projectId: string;
+  script: EditableScript;
+  onSave: (script: EditableScript) => void;
+  onNext?: () => void;
+  onBack?: () => void;
+  isLoading?: boolean;
+}
+
+export interface SceneListProps {
+  scenes: EditableScene[];
+  onSceneUpdate: (sceneId: number, updates: Partial<EditableScene>) => void;
+  onSceneDelete: (sceneId: number) => void;
+  onSceneAdd: () => void;
+  onSceneReorder: (sceneOrder: number[]) => void;
 } 

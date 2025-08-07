@@ -102,7 +102,7 @@ export const useScriptEditor = ({ projectId, initialScript }: UseScriptEditorPro
 
     try {
       // ローカルでシーンを更新
-      const updatedScenes = script.scenes.map(scene => 
+      const updatedScenes = script.scenes.map((scene: EditableScene) => 
         scene.scene_id === sceneId 
           ? { ...scene, ...updates, is_edited: true }
           : scene
@@ -122,10 +122,10 @@ export const useScriptEditor = ({ projectId, initialScript }: UseScriptEditorPro
 
       // APIでシーンを更新
       const updateRequest: SceneUpdateRequest = {
-        text: updates.text,
-        voice_settings: updates.voice_settings,
-        duration: updates.duration,
-        scene_type: updates.scene_type
+        ...(updates.text !== undefined && { text: updates.text }),
+        ...(updates.voice_settings !== undefined && { voice_settings: updates.voice_settings }),
+        ...(updates.duration !== undefined && { duration: updates.duration }),
+        ...(updates.scene_type !== undefined && { scene_type: updates.scene_type })
       };
 
       const response = await scriptEditApi.updateScene(projectId, sceneId, updateRequest);
@@ -186,7 +186,7 @@ export const useScriptEditor = ({ projectId, initialScript }: UseScriptEditorPro
       const response = await scriptEditApi.deleteScene(projectId, sceneId);
       
       if (response.success) {
-        const updatedScenes = script.scenes.filter(scene => scene.scene_id !== sceneId);
+        const updatedScenes = script.scenes.filter((scene: EditableScene) => scene.scene_id !== sceneId);
         
         const updatedScript = {
           ...script,
@@ -221,7 +221,7 @@ export const useScriptEditor = ({ projectId, initialScript }: UseScriptEditorPro
       
       if (response.success) {
         // 新しい順序でシーンを並び替え
-        const sceneDict = script.scenes.reduce((acc, scene) => {
+        const sceneDict = script.scenes.reduce((acc: Record<number, EditableScene>, scene: EditableScene) => {
           acc[scene.scene_id] = scene;
           return acc;
         }, {} as Record<number, EditableScene>);
