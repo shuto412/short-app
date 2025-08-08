@@ -277,7 +277,59 @@ function App() {
               });
               setEditableScript(script);
             }}
-            onNext={() => setAppState('processing')}
+            onNext={async () => {
+              setIsLoading(true);
+              setError('');
+              try {
+                // 段階4: 音声設定作成（voice_prompt.yaml 生成）
+                await stageAPI.createVoiceSettings(projectId, selectedVoiceActorId, voiceSpeed);
+                // 生成待機
+                await (async () => {
+                  const start = Date.now();
+                  const timeoutMs = 120000;
+                  while (true) {
+                    const status = await projectAPI.getStatus(projectId);
+                    if ((status.files || []).includes('voice_prompt.yaml')) break;
+                    if (Date.now() - start > timeoutMs) throw new Error('タイムアウト: voice_prompt.yaml');
+                    await new Promise(r => setTimeout(r, 1500));
+                  }
+                })();
+
+                // 段階5: 音声生成（音声/字幕）
+                await stageAPI.generateVoice(projectId);
+                // 完了待機（audio_combined.wav か subtitle.srt のいずれか）
+                await (async () => {
+                  const start = Date.now();
+                  const timeoutMs = 180000;
+                  while (true) {
+                    const status = await projectAPI.getStatus(projectId);
+                    const files = status.files || [];
+                    if (files.includes('audio_combined.wav') || files.includes('subtitle.srt')) break;
+                    if (Date.now() - start > timeoutMs) throw new Error('タイムアウト: 音声/字幕生成');
+                    await new Promise(r => setTimeout(r, 2000));
+                  }
+                })();
+
+                // 結果画面へ
+                const projectData = await projectAPI.get(projectId);
+                setProject(projectData.project);
+                const generatedFiles: GeneratedFile[] = projectData.files.map((fileName: string) => {
+                  const fileType = getFileType(fileName);
+                  return {
+                    name: fileName,
+                    type: fileType,
+                    downloadUrl: generationAPI.download(projectId, fileType)
+                  };
+                });
+                setFiles(generatedFiles);
+                setAppState('result');
+              } catch (e: any) {
+                setError(e.message || '次工程の実行に失敗しました');
+                setAppState('processing');
+              } finally {
+                setIsLoading(false);
+              }
+            }}
             onBack={() => setAppState('voice-actor-selection')}
             isLoading={isLoading}
           />

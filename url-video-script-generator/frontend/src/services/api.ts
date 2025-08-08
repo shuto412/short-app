@@ -150,6 +150,24 @@ export const stageAPI = {
     });
   },
 
+  createVoiceSettings: async (projectId: string, voiceActorId: string, voiceSpeed: number) => {
+    const params = new URLSearchParams({
+      project_id: projectId,
+      voice_actor_id: voiceActorId,
+      voice_speed: String(voiceSpeed ?? 1.0),
+    });
+    return await debugFetch(`${API_BASE_URL}/stages/voice-settings?${params.toString()}`, {
+      method: 'POST',
+    });
+  },
+
+  generateVoice: async (projectId: string) => {
+    const params = new URLSearchParams({ project_id: projectId });
+    return await debugFetch(`${API_BASE_URL}/stages/voice-generation?${params.toString()}`, {
+      method: 'POST',
+    });
+  },
+
   // 音声設定関連（段階APIに合わせたエンドポイント）
   getVoicePrompt: async (projectId: string) => {
     return await debugFetch(`${API_BASE_URL}/stages/voice-settings/${encodeURIComponent(projectId)}`);

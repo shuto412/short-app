@@ -106,3 +106,63 @@ class StageProcessor:
         except Exception as e:
             logger.error(f"[Stage] Script generation failed: {project_id} - {e}")
             return {"success": False, "message": str(e)}
+
+    async def process_stage_voice_prompt_creation(self, project_id: str, voice_actor_id: str, voice_speed: float = 1.0) -> dict:
+        """段階4: 音声設定（プロンプト）作成"""
+        try:
+            logger.info(f"[Stage] Voice prompt creation start: {project_id}")
+            # 入力ファイル確認
+            await self.file_manager.read_file(project_id, "script.yaml")
+            # スクリプト読み込み
+            script = await self.file_manager.read_file(project_id, "script.yaml")
+            prompt = self.voice_generator.create_voice_prompt(script, voice_actor_id, voice_speed or 1.0)
+            await self.file_manager.save_file(project_id, "voice_prompt.yaml", prompt)
+            logger.info(f"[Stage] Voice prompt creation done: {project_id}")
+            return {"success": True}
+        except Exception as e:
+            logger.error(f"[Stage] Voice prompt creation failed: {project_id} - {e}")
+            return {"success": False, "message": str(e)}
+
+    async def process_stage_voice_generation(self, project_id: str) -> dict:
+        """段階5: 音声・字幕生成"""
+        try:
+            logger.info(f"[Stage] Voice generation start: {project_id}")
+            # 必要ファイル
+            voice_prompt = await self.file_manager.read_file(project_id, "voice_prompt.yaml")
+
+            # 個別音声生成
+            audio_files = await self.voice_generator.generate_individual_files_from_script(voice_prompt)
+            for f in audio_files:
+                await self.file_manager.save_file(project_id, f["filename"], f["audio_data"])
+
+            # 統合音声
+            if audio_files:
+                combined = self.voice_generator._combine_audio_segments([f["audio_data"] for f in audio_files])
+                await self.file_manager.save_file(project_id, "audio_combined.wav", combined)
+
+            # 情報保存
+            audio_files_info = [
+                {
+                    "segment_id": f["segment_id"],
+                    "filename": f["filename"],
+                    "text": f["text"],
+                    "duration": f["duration"],
+                    "size_bytes": f.get("size_bytes"),
+                    "error": f.get("error"),
+                }
+                for f in audio_files
+            ]
+            await self.file_manager.save_file(project_id, "audio_files_info.yaml", audio_files_info)
+
+            # 字幕
+            script = await self.file_manager.read_file(project_id, "script.yaml")
+            subtitle_srt = self.subtitle_generator.generate_srt(script)
+            await self.file_manager.save_file(project_id, "subtitle.srt", subtitle_srt)
+            subtitle_vtt = self.subtitle_generator.generate_vtt(script)
+            await self.file_manager.save_file(project_id, "subtitle.vtt", subtitle_vtt)
+
+            logger.info(f"[Stage] Voice generation done: {project_id}")
+            return {"success": True}
+        except Exception as e:
+            logger.error(f"[Stage] Voice generation failed: {project_id} - {e}")
+            return {"success": False, "message": str(e)}

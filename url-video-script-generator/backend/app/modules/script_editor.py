@@ -135,6 +135,9 @@ class ScriptEditor:
 
             # 入力をEditableScriptで検証
             try:
+                # FastAPIで受けたモデルがPydanticモデルのまま来ることがあるためdict化
+                if hasattr(script_update, 'dict'):
+                    script_update = script_update.dict()
                 EditableScript.parse_obj(script_update)
             except Exception as e:
                 raise InvalidScriptStructureError(str(e))
