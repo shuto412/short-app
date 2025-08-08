@@ -197,51 +197,8 @@ async def execute_script_generation(
         raise HTTPException(status_code=500, detail="台本生成の実行に失敗しました")
 
 # =============================================================================
-# 台本編集エンドポイント
+# 台本編集エンドポイント（重複のため script_edit.py を正式採用。こちらは非推奨）
 # =============================================================================
-
-@router.get("/script/{project_id}")
-async def get_script(project_id: str):
-    """台本取得"""
-    if project_id not in projects_db:
-        raise HTTPException(status_code=404, detail="Project not found")
-    
-    if not file_manager.file_exists(project_id, "script.yaml"):
-        raise HTTPException(status_code=404, detail="台本が見つかりません。まず台本を生成してください")
-    
-    try:
-        result = await script_editor.get_script(project_id)
-        if result["success"]:
-            return result["script"]
-        else:
-            raise HTTPException(status_code=500, detail=result.get("message", "台本の取得に失敗しました"))
-    except Exception as e:
-        logger.error(f"❌ Failed to get script for {project_id}: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"台本の取得に失敗しました: {str(e)}")
-
-@router.put("/script/{project_id}")
-async def update_script(project_id: str, script_update: Dict):
-    """台本編集"""
-    if project_id not in projects_db:
-        raise HTTPException(status_code=404, detail="Project not found")
-    
-    project = projects_db[project_id]
-    if not project.can_edit_script:
-        raise HTTPException(status_code=400, detail="台本編集が許可されていません")
-    
-    try:
-        result = await script_editor.update_script(project_id, script_update)
-        if result["success"]:
-            return {
-                "message": result["message"],
-                "warnings": result.get("warnings", []),
-                "script": result["script"]
-            }
-        else:
-            raise HTTPException(status_code=400, detail=result.get("message", "台本の更新に失敗しました"))
-    except Exception as e:
-        logger.error(f"❌ Failed to update script for {project_id}: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"台本の更新に失敗しました: {str(e)}")
 
 # =============================================================================
 # 音声設定作成・編集エンドポイント

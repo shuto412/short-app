@@ -54,14 +54,12 @@ const ScriptEditor: React.FC<EditableScriptEditorProps> = ({
       duration: 5.0,
       text: '新しいシーンを追加しました。編集してください。',
       voice_settings: {
-        voice_actor_id: 'default',
         emotion: 'cheerful',
         speed: 1.0,
         pitch: 1.0,
         volume: 1.0,
-        pauseLength: 0.8
+        pause_length: 0.8
       },
-      order: script.scenes.length,
       is_edited: true
     };
     setScript({ ...script, scenes: [...script.scenes, newScene] });
@@ -79,9 +77,9 @@ const ScriptEditor: React.FC<EditableScriptEditorProps> = ({
       {/* ヘッダー */}
       <div className="script-editor-header">
         <div className="project-info">
-          <h2>{script.title}</h2>
+          <h2>{script.metadata.title}</h2>
           <p className="project-details">
-            プロジェクトID: {script.project_id} | 
+            プロジェクトID: {script.metadata.project_id} | 
             シナリオタイプ: {script.metadata.scenario_type} | 
             総時間: {script.metadata.total_duration}秒
           </p>

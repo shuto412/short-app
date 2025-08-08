@@ -131,6 +131,7 @@ export type AppState =
   | 'url-input'
   | 'scenario-selection'
   | 'voice-actor-selection'
+  | 'script-editing'
   | 'processing'
   | 'result'; 
 
@@ -230,39 +231,36 @@ export interface VoiceSettingsEditorProps {
   isLoading?: boolean;
 }
 
-// スクリプト編集関連の型定義
+// スクリプト編集関連の型定義（Backend準拠）
+export interface EditableVoiceSettings {
+  emotion: 'cheerful' | 'confident' | 'calm' | 'excited' | 'serious';
+  speed: number;   // 0.5 - 2.0
+  pitch: number;   // 0.5 - 2.0
+  volume: number;  // 0.0 - 2.0
+  pause_length: number; // 0.0 - 2.0
+}
+
 export interface EditableScene {
   scene_id: number;
-  scene_type: 'introduction' | 'main_content' | 'conclusion' | 'transition';
-  text: string;
+  scene_type: 'opening' | 'main_content' | 'explanation' | 'demonstration' | 'conclusion' | 'cta';
   duration: number;
+  text: string;
   voice_settings: EditableVoiceSettings;
-  order: number;
   is_edited?: boolean;
 }
 
-export interface EditableVoiceSettings {
-  voice_actor_id: string;
-  speed: number;
-  pitch: number;
-  volume: number;
-  emotion?: string;
-  pauseLength?: number;
-  intonation?: number;
+export interface EditableScriptMetadata {
+  project_id: string;
+  title: string;
+  scenario_type: string;
+  total_duration: number;
+  version: number;
+  edited: boolean;
+  last_edited: string | null;
 }
 
 export interface EditableScript {
-  project_id: string;
-  title: string;
-  description?: string;
-  metadata: {
-    total_duration: number;
-    scene_count: number;
-    created_at: string;
-    updated_at: string;
-    version?: number;
-    scenario_type?: string;
-  };
+  metadata: EditableScriptMetadata;
   scenes: EditableScene[];
 }
 
@@ -277,11 +275,14 @@ export interface SceneUpdateRequest {
   text?: string;
   voice_settings?: EditableVoiceSettings;
   duration?: number;
-  scene_type?: 'introduction' | 'main_content' | 'conclusion' | 'transition';
+  scene_type?: 'opening' | 'main_content' | 'explanation' | 'demonstration' | 'conclusion' | 'cta';
 }
 
 export interface SceneAddRequest {
-  scene: EditableScene;
+  scene_type: EditableScene['scene_type'];
+  text: string;
+  voice_settings?: EditableVoiceSettings;
+  duration: number;
 }
 
 export interface SceneReorderRequest {

@@ -190,10 +190,10 @@ const SceneEditDialog: React.FC<SceneEditDialogProps> = ({
                 min="0.0"
                 max="2.0"
                 step="0.1"
-                              value={formData.voice_settings?.pauseLength || 0.8}
-              onChange={(e) => handleVoiceSettingChange('pauseLength', parseFloat(e.target.value))}
+              value={formData.voice_settings?.pause_length || 0.8}
+              onChange={(e) => handleVoiceSettingChange('pause_length', parseFloat(e.target.value))}
             />
-            <span className="range-value">{formData.voice_settings?.pauseLength || 0.8}秒</span>
+            <span className="range-value">{formData.voice_settings?.pause_length || 0.8}秒</span>
             </div>
           </div>
         </div>

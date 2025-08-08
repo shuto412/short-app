@@ -2,6 +2,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.api import project, generation
+from app.api import stages
+from app.api import script_edit
 from app.config import settings
 import logging
 
@@ -30,6 +32,8 @@ async def health_check():
 app.include_router(project.router, prefix="/api/project", tags=["project"])
 app.include_router(project.router, prefix="/api/projects", tags=["project"])  # フロントエンド互換性
 app.include_router(generation.router, prefix="/api/generate", tags=["generation"])
+app.include_router(stages.router)  # stages側でprefixを持つ
+app.include_router(script_edit.router, prefix="/api", tags=["script-edit"])  
 
 # 静的ファイル配信 (テンプレートディレクトリが存在する場合のみ)
 import os

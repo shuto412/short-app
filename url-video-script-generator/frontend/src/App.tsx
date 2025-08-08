@@ -6,7 +6,9 @@ import { ScenarioSelector } from './components/ScenarioSelector';
 import { VoiceActorSelector } from './components/VoiceActorSelector';
 import { ProgressDisplay } from './components/ProgressDisplay';
 import { ResultViewer } from './components/ResultViewer';
-import { projectAPI, generationAPI } from './services/api';
+import { projectAPI, generationAPI, stageAPI } from './services/api';
+import ScriptEditor from './components/ScriptEditor/ScriptEditor';
+import { EditableScript } from './types';
 import type { AppState, Scenario, VoiceActor, Project, GeneratedFile } from './types';
 
 // React Query クライアント設定
@@ -46,6 +48,7 @@ function App() {
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [voiceActors, setVoiceActors] = useState<VoiceActor[]>([]);
   const [project, setProject] = useState<Project | null>(null);
+  const [editableScript, setEditableScript] = useState<EditableScript | null>(null);
   const [files, setFiles] = useState<GeneratedFile[]>([]);
   const [processingStatus, setProcessingStatus] = useState<any>(null);
   
@@ -170,9 +173,39 @@ function App() {
     setError('');
 
     try {
-      // 処理開始
-      await generationAPI.process(projectId, selectedVoiceActorId, voiceSpeed);
-      setAppState('processing');
+      // ユーティリティ: 指定ファイルが生成されるまでポーリング
+      const waitForFile = async (targetFile: string, timeoutMs = 120000, intervalMs = 1500) => {
+        const start = Date.now();
+        for (;;) {
+          const status = await projectAPI.getStatus(projectId);
+          const files: string[] = status.files || [];
+          if (files.includes(targetFile)) return;
+          if (Date.now() - start > timeoutMs) throw new Error(`タイムアウト: ${targetFile} の生成を待機中に時間切れ`);
+          await new Promise((r) => setTimeout(r, intervalMs));
+        }
+      };
+
+      // 段階1: スクレイピング → scraped_content.txt を待つ
+      await stageAPI.startScraping(projectId);
+      await waitForFile('scraped_content.txt');
+
+      // 段階2: 要約 → summary.txt を待つ
+      await stageAPI.startSummary(projectId);
+      await waitForFile('summary.txt');
+
+      // 段階3: 台本生成 → script.yaml を待つ
+      await stageAPI.startScriptGeneration(projectId, scenarioType || 'product_introduction');
+      await waitForFile('script.yaml');
+
+      // 台本編集画面へ
+      const apiBase = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080';
+      const scriptResp = await (await fetch(`${apiBase}/api/script/${projectId}`)).json();
+      if (scriptResp && scriptResp.script) {
+        setEditableScript(scriptResp.script);
+        setAppState('script-editing');
+      } else {
+        setAppState('processing');
+      }
     } catch (error: any) {
       setError(error.message || '処理の開始に失敗しました');
     } finally {
@@ -228,6 +261,28 @@ function App() {
             onNext={handleStartProcessing}
             isLoading={isLoading}
           />
+        );
+
+      case 'script-editing':
+        return editableScript ? (
+          <ScriptEditor
+            projectId={projectId}
+            script={editableScript}
+            onSave={async (script) => {
+              // 保存API
+              await fetch(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080'}/api/script/${projectId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(script),
+              });
+              setEditableScript(script);
+            }}
+            onNext={() => setAppState('processing')}
+            onBack={() => setAppState('voice-actor-selection')}
+            isLoading={isLoading}
+          />
+        ) : (
+          <div>台本を読み込み中...</div>
         );
 
       case 'processing':

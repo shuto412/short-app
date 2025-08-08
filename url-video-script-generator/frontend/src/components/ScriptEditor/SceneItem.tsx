@@ -94,7 +94,7 @@ const SceneItem: React.FC<SceneItemProps> = ({
             </div>
             <div className="voice-setting-item">
               <span className="setting-label">ポーズ:</span>
-                              <span className="setting-value">{scene.voice_settings.pauseLength}秒</span>
+              <span className="setting-value">{scene.voice_settings.pause_length}秒</span>
             </div>
           </div>
         </div>

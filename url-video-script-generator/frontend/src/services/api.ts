@@ -131,50 +131,65 @@ export const generationAPI = {
 }; 
 
 export const stageAPI = {
-  getScript: async (projectId: string) => {
-    return await debugFetch(`${API_BASE_URL}/stages/${projectId}/script`);
-  },
-  
-  saveScript: async (projectId: string, script: any) => {
-    return await debugFetch(`${API_BASE_URL}/stages/${projectId}/script`, {
-      method: 'PUT',
-      body: JSON.stringify(script),
+  startScraping: async (projectId: string) => {
+    return await debugFetch(`${API_BASE_URL}/stages/scraping?project_id=${encodeURIComponent(projectId)}`, {
+      method: 'POST',
     });
   },
-  
-  getVoicePrompt: async (projectId: string) => {
-    return await debugFetch(`${API_BASE_URL}/stages/${projectId}/voice-prompt`);
+
+  startSummary: async (projectId: string) => {
+    return await debugFetch(`${API_BASE_URL}/stages/summary?project_id=${encodeURIComponent(projectId)}`, {
+      method: 'POST',
+    });
   },
-  
+
+  startScriptGeneration: async (projectId: string, scenarioType: string) => {
+    return await debugFetch(`${API_BASE_URL}/stages/script`, {
+      method: 'POST',
+      body: JSON.stringify({ project_id: projectId, scenario_type: scenarioType }),
+    });
+  },
+
+  // 音声設定関連（段階APIに合わせたエンドポイント）
+  getVoicePrompt: async (projectId: string) => {
+    return await debugFetch(`${API_BASE_URL}/stages/voice-settings/${encodeURIComponent(projectId)}`);
+  },
+
   saveVoicePrompt: async (projectId: string, voicePrompt: any) => {
-    return await debugFetch(`${API_BASE_URL}/stages/${projectId}/voice-prompt`, {
+    return await debugFetch(`${API_BASE_URL}/stages/voice-settings/${encodeURIComponent(projectId)}`, {
       method: 'PUT',
       body: JSON.stringify(voicePrompt),
     });
   },
-  
+
+  // サーバ側にバッチエンドポイントがないため、クライアント側で一括適用→PUT
   batchUpdateVoiceParameters: async (projectId: string, parameters: any) => {
-    return await debugFetch(`${API_BASE_URL}/stages/${projectId}/voice-prompt/batch-update`, {
-      method: 'POST',
-      body: JSON.stringify(parameters),
+    const current = await debugFetch(`${API_BASE_URL}/stages/voice-settings/${encodeURIComponent(projectId)}`);
+    if (!current || !current.segments) return current;
+    const updated = {
+      ...current,
+      segments: current.segments.map((seg: any) => ({
+        ...seg,
+        parameters: { ...seg.parameters, ...parameters },
+      })),
+    };
+    return await debugFetch(`${API_BASE_URL}/stages/voice-settings/${encodeURIComponent(projectId)}`, {
+      method: 'PUT',
+      body: JSON.stringify(updated),
     });
   },
-  
-  previewVoiceSegment: async (projectId: string, segmentId: number) => {
-    return await debugFetch(`${API_BASE_URL}/stages/${projectId}/voice-prompt/preview/${segmentId}`, {
-      method: 'POST',
+
+  // プレビューはサーバ未実装のためダミー応答
+  previewVoiceSegment: async (_projectId: string, _segmentId: number) => {
+    return Promise.resolve({
+      preview_description: 'ローカルプレビュー（ダミー）',
+      estimated_duration: 3.0,
     });
   },
-  
-  previewSegment: async (projectId: string, segmentId: number) => {
-    return await debugFetch(`${API_BASE_URL}/stages/${projectId}/preview/${segmentId}`, {
-      method: 'POST',
-    });
-  },
-  
+
+  // リセットは現在保存されている設定（ファイル）をGETして返す
   resetVoicePrompt: async (projectId: string) => {
-    return await debugFetch(`${API_BASE_URL}/stages/${projectId}/voice-prompt/reset`, {
-      method: 'POST',
-    });
+    const current = await debugFetch(`${API_BASE_URL}/stages/voice-settings/${encodeURIComponent(projectId)}`);
+    return { voice_prompt: current };
   },
-}; 
+};
