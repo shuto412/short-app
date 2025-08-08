@@ -38,6 +38,21 @@ graph TB
 5. 保存・次段階へ
 ```
 
+### 2.3 ルーティング構成（正式）
+- バックエンドは `script_edit` ルーターを `/api` 配下にマウントする。
+- `stages.py` 内の台本編集系エンドポイント（`/api/stages/script/...`）は重複のため非推奨（将来的に削除）。
+
+```python
+# app/main.py の例
+from app.api import project, generation
+from app.api import script_edit  # 追加
+
+app.include_router(project.router, prefix="/api/project", tags=["project"])
+app.include_router(project.router, prefix="/api/projects", tags=["project"])  # 既存互換
+app.include_router(generation.router, prefix="/api/generate", tags=["generation"])
+app.include_router(script_edit.router, prefix="/api", tags=["script-edit"])  # 正式
+```
+
 ## 3. データモデル
 
 ### 3.1 編集用スクリプトモデル
@@ -74,6 +89,12 @@ interface VoiceSettings {
 }
 ```
 
+### 3.3 型整合性要件（Backend ↔ Frontend）
+- `scene_type` は `'opening' | 'main_content' | 'explanation' | 'demonstration' | 'conclusion' | 'cta'` を正式採用（フロントの `'introduction' | 'transition'` は廃止）
+- `EditableScript.metadata` は `project_id/title/scenario_type/total_duration/version/edited/last_edited` を保持
+- フロントの `EditableScript` / `EditableScene` / `VoiceSettings` 型は上記に合わせて更新する
+- API レスポンスは `ScriptEditResponse { success, script?, message? }` を返す
+
 ### 3.2 API レスポンスモデル
 ```typescript
 interface ScriptEditResponse {
@@ -101,6 +122,11 @@ interface SceneUpdateResponse {
 | POST | `/api/script/{project_id}/scene` | シーン追加 |
 | DELETE | `/api/script/{project_id}/scene/{scene_id}` | シーン削除 |
 | PUT | `/api/script/{project_id}/scenes/reorder` | シーン順序変更 |
+
+### 4.3 ルーティングと競合の解消
+- 正式採用: `/api/script/...`（`script_edit.py`）
+- 非推奨: `/api/stages/script/...`（`stages.py` の重複実装）
+- 互換性維持が不要であれば、`stages.py` 側の編集系エンドポイントは削除する
 
 ### 4.2 リクエスト/レスポンス例
 
@@ -267,6 +293,21 @@ class ScriptEditor:
         """シーン順序を変更"""
 ```
 
+実装要件:
+- `get_script`: `DATA/{project_id}/script.yaml` を読み取り、`EditableScript` 形式で返す
+- `update_script`: `EditableScript` 形式をバリデートし、マージして保存（バックアップ作成）
+- `update_scene`: 指定 `scene_id` の `text/voice_settings/duration/scene_type` を部分更新
+- `add_scene`: 新規 `scene_id` を採番して末尾追加、`is_edited=true`、保存
+- `delete_scene`: 該当シーン削除後に保存
+- `reorder_scenes`: 渡された `scene_order` に合わせて `scenes` を並び替え、保存（IDは再採番しない）
+
+### 6.3 バリデーション準拠
+- バリデーションは `EditableScript`/`EditableScene` の構造に準拠する（既存の `content` ベース検証は廃止）
+- `VoiceSettings`
+  - `emotion` は定義済みの5種のみ
+  - `speed/pitch` は 0.5–2.0、`volume` は 0.0–2.0、`pause_length` は 0.0–2.0
+  - 不正時は `400` で `ScriptEditResponse.success=false` と `message` を返す
+
 ### 6.2 API エンドポイント実装
 ```python
 @router.get("/script/{project_id}")
@@ -370,6 +411,10 @@ class TestScriptEditFlow:
 SCRIPT_EDIT_ENABLED=true
 MAX_EDIT_SESSIONS=50
 EDIT_SESSION_TIMEOUT=3600
+
+# ポート/フロント連携
+BACKEND_PORT=8080
+REACT_APP_API_BASE_URL=http://localhost:8080
 ```
 
 ### 12.2 監視設定
@@ -380,6 +425,16 @@ script_edit_metrics:
   - scene_updates_count
   - save_frequency
 ```
+
+## 14. 整合性チェックリスト / 実装タスクリスト
+- [必須] `app/main.py` に `script_edit.router` を `/api` でマウント
+- [必須] `stages.py` の `/script` 編集系エンドポイントを削除または `/api/script/...` に統合
+- [必須] `ScriptEditor` に `update_scene/add_scene/delete_scene/reorder_scenes` を実装
+- [必須] `ScriptEditor._validate_script_structure` を `EditableScript`/`scenes` 準拠に改修（`content` 検証は廃止）
+- [必須] フロントの型 `EditableScript/EditableScene/VoiceSettings` を本設計に合わせて更新
+- [必須] フロントの API クライアントは `/api/script/...` を利用（`REACT_APP_API_BASE_URL` は 8080 を指す）
+- [推奨] 保存時に `script_backup.yaml` を自動生成
+- [推奨] 競合回避のための簡易ロック/`last_edited` のETag 相当チェック
 
 ## 13. 実装優先順位
 
