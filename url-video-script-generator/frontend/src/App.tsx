@@ -9,7 +9,7 @@ import { ResultViewer } from './components/ResultViewer';
 import { projectAPI, generationAPI, stageAPI } from './services/api';
 import ScriptEditor from './components/ScriptEditor/ScriptEditor';
 import { EditableScript } from './types';
-import type { AppState, Scenario, VoiceActor, Project, GeneratedFile } from './types';
+import type { AppState, VoiceActor, Project, GeneratedFile } from './types';
 
 // React Query クライアント設定
 const queryClient = new QueryClient({
@@ -41,11 +41,12 @@ function App() {
   // 状態管理
   const [appState, setAppState] = useState<AppState>('url-input');
   const [projectId, setProjectId] = useState<string>('');
-  const [url, setUrl] = useState<string>('');
+  // URLの値自体は使わないため、setterのみ保持
+  const [, setUrl] = useState<string>('');
   const [scenarioType, setScenarioType] = useState<string>('');
   const [selectedVoiceActorId, setSelectedVoiceActorId] = useState<string>('231e0170-0ece-4155-be44-231423062f41');
   const [voiceSpeed, setVoiceSpeed] = useState<number>(1.5);
-  const [scenarios, setScenarios] = useState<Scenario[]>([]);
+  // const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [voiceActors, setVoiceActors] = useState<VoiceActor[]>([]);
   const [project, setProject] = useState<Project | null>(null);
   const [editableScript, setEditableScript] = useState<EditableScript | null>(null);
@@ -56,15 +57,11 @@ function App() {
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // 初期化: シナリオとボイスアクターを取得
+  // 初期化: ボイスアクターを取得
   useEffect(() => {
     const initializeData = async () => {
       try {
-        const [scenariosData, voiceActorsData] = await Promise.all([
-          generationAPI.getScenarios(),
-          generationAPI.getVoiceActors()
-        ]);
-        setScenarios(scenariosData);
+        const voiceActorsData = await generationAPI.getVoiceActors();
         setVoiceActors(voiceActorsData);
       } catch (error) {
         console.error('初期化エラー:', error);
@@ -156,8 +153,8 @@ function App() {
   };
 
   const handleScenarioSelect = (selectedScenarioType: string) => {
+    // 選択時は状態のみ反映し、画面は遷移しない
     setScenarioType(selectedScenarioType);
-    setAppState('voice-actor-selection');
   };
 
   const handleVoiceActorSelect = (voiceActorId: string) => {
@@ -243,10 +240,10 @@ function App() {
       case 'scenario-selection':
         return (
           <ScenarioSelector
-            scenarios={scenarios}
             selectedScenario={scenarioType}
             onSelect={handleScenarioSelect}
             isLoading={isLoading}
+            onNext={() => setAppState('voice-actor-selection')}
           />
         );
 

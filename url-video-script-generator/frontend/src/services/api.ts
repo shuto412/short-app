@@ -103,6 +103,13 @@ export const generationAPI = {
     const data = await debugFetch(`${API_BASE_URL}/generate/voice-actors`);
     return data.voice_actors || [];
   },
+
+  // テンプレート詳細一覧の取得
+  getTemplates: async () => {
+    console.log('📑 Getting templates...');
+    const data = await debugFetch(`${API_BASE_URL}/generate/templates`);
+    return data.templates || {};
+  },
   
   getAudioFiles: async (projectId: string) => {
     console.log(`🎵 Getting audio files for project: ${projectId}`);

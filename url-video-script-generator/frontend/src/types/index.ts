@@ -307,3 +307,16 @@ export interface SceneListProps {
   onSceneAdd: () => void;
   onSceneReorder: (sceneOrder: number[]) => void;
 } 
+
+// テンプレート詳細およびタプル型（シナリオ選択UI用）
+export type ScenarioTuple = [category: string, templateId: string];
+
+export interface TemplateDetail {
+  name: string;
+  description: string;
+  category: string;
+  tags?: string[];
+  structure?: Array<{ type: string; description?: string } | string>;
+  voice_settings?: Record<string, unknown>;
+  file?: string;
+}
