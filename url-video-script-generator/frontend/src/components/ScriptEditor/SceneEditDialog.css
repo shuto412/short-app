@@ -106,62 +106,7 @@
   min-height: 100px;
 }
 
-/* 音声設定セクション */
-.voice-settings-section {
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #e9ecef;
-}
-
-.voice-settings-section h4 {
-  margin: 0 0 1rem 0;
-  color: #2c3e50;
-  font-size: 1.1rem;
-}
-
-/* レンジスライダー */
-.form-group input[type="range"] {
-  width: calc(100% - 60px);
-  margin-right: 10px;
-}
-
-.range-value {
-  display: inline-block;
-  min-width: 50px;
-  text-align: right;
-  color: #495057;
-  font-weight: 600;
-  font-size: 0.9rem;
-}
-
-/* レンジスライダーのスタイル */
-input[type="range"] {
-  -webkit-appearance: none;
-  appearance: none;
-  height: 6px;
-  background: #e9ecef;
-  border-radius: 3px;
-  outline: none;
-}
-
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  background: #007bff;
-  border-radius: 50%;
-  cursor: pointer;
-}
-
-input[type="range"]::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  background: #007bff;
-  border-radius: 50%;
-  cursor: pointer;
-  border: none;
-}
+/* 音声設定セクション（削除済み UI）に関連するスタイルは除去 */
 
 /* レスポンシブデザイン */
 @media (max-width: 768px) {
