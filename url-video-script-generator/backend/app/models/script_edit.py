@@ -28,6 +28,7 @@ class EditableScene(BaseModel):
     text: str = Field(..., min_length=1, description="シーンテキスト")
     voice_settings: VoiceSettings = Field(..., description="音声設定")
     is_edited: bool = Field(False, description="編集済みフラグ")
+    text_jp: Optional[str] = Field(None, description="シーンテキスト（ひらがな）")
     
     @validator('scene_type')
     def validate_scene_type(cls, v):
@@ -63,6 +64,7 @@ class SceneUpdateRequest(BaseModel):
     voice_settings: Optional[VoiceSettings] = Field(None, description="音声設定")
     duration: Optional[float] = Field(None, ge=0.1, description="時間")
     scene_type: Optional[str] = Field(None, description="シーンタイプ")
+    text_jp: Optional[str] = Field(None, description="テキスト（ひらがな）")
 
 class SceneUpdateResponse(BaseModel):
     """シーン更新レスポンス"""

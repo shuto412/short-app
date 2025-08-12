@@ -200,6 +200,9 @@ class ScriptGenerator:
 2. 動画視聴者に向けた親しみやすい語りかけ
 3. 指定された時間配分に従った構成
 4. 各セクションに適切な感情やトーンの指定
+5. 各シーンは text（原文）と text_jp（原文のひらがな表記）の両方を含めること
+6. text_jp は必ず全てひらがなで出力すること（漢字・カタカナ・英語・数字を含めない）、text_jp は音声生成AIへプロンプトとして送られる文章なので、textのよみがなをひらがなで出力すること
+
 
 以下のJSON形式で出力してください:
 {{
@@ -209,6 +212,7 @@ class ScriptGenerator:
             "scene_type": "opening",
             "duration": 9.0,
             "text": "こんにちは！今日は素晴らしい製品をご紹介します。",
+            "text_jp": "こんにちは！きょうはすばらしいせいひんをごしょうかいします。",
             "voice_settings": {{
                 "emotion": "cheerful",
                 "speed": 1.0,
@@ -278,13 +282,16 @@ class ScriptGenerator:
         
         validated_scenes = []
         total_assigned_duration = 0
-        
+        from app.modules.kana_converter import to_hiragana
+
         for i, scene in enumerate(scenes):
+            base_text = scene.get("text", "こちらのコンテンツをご紹介します。")
             validated_scene = {
                 "scene_id": i + 1,
                 "scene_type": self._normalize_scene_type(scene.get("scene_type", "main_content")),
                 "duration": float(scene.get("duration", 10.0)),
-                "text": scene.get("text", "こちらのコンテンツをご紹介します。"),
+                "text": base_text,
+                "text_jp": scene.get("text_jp") or to_hiragana(base_text),
                 "voice_settings": scene.get("voice_settings", {
                     "emotion": "neutral",
                     "speed": 1.0,
@@ -313,12 +320,14 @@ class ScriptGenerator:
     
     def _create_default_scenes(self, target_duration: int) -> List[Dict]:
         """デフォルトシーンを作成"""
+        from app.modules.kana_converter import to_hiragana
         return [
             {
                 "scene_id": 1,
                 "scene_type": "opening",
                 "duration": target_duration * 0.3,
                 "text": "こんにちは！本日はご視聴いただき、ありがとうございます。",
+                "text_jp": to_hiragana("こんにちは！本日はご視聴いただき、ありがとうございます。"),
                 "voice_settings": {"emotion": "cheerful", "speed": 1.0, "pitch": 1.0}
             },
             {
@@ -326,6 +335,7 @@ class ScriptGenerator:
                 "scene_type": "main_content",
                 "duration": target_duration * 0.5,
                 "text": "こちらの内容について詳しくご説明いたします。",
+                "text_jp": to_hiragana("こちらの内容について詳しくご説明いたします。"),
                 "voice_settings": {"emotion": "informative", "speed": 1.0, "pitch": 1.0}
             },
             {
@@ -333,6 +343,7 @@ class ScriptGenerator:
                 "scene_type": "conclusion",
                 "duration": target_duration * 0.2,
                 "text": "ご視聴いただき、ありがとうございました。",
+                "text_jp": to_hiragana("ご視聴いただき、ありがとうございました。"),
                 "voice_settings": {"emotion": "grateful", "speed": 1.0, "pitch": 1.0}
             }
         ]
@@ -375,6 +386,8 @@ class ScriptGenerator:
         scenes = []
         current_time = 0
         
+        from app.modules.kana_converter import to_hiragana
+
         for i, section in enumerate(template['structure']):
             duration = section['duration_ratio'] * target_duration
             
@@ -397,6 +410,7 @@ class ScriptGenerator:
                 "scene_type": normalized_type,
                 "duration": round(duration, 1),
                 "text": text,
+                "text_jp": to_hiragana(text),
                 "voice_settings": {
                     "emotion": "neutral",
                     "speed": 1.0,

@@ -88,6 +88,14 @@ class ScriptEditor:
             if "is_edited" not in scene:
                 scene["is_edited"] = False
                 changed = True
+            # text_jp のデフォルト補完
+            if scene.get("text") and not scene.get("text_jp"):
+                try:
+                    from app.modules.kana_converter import to_hiragana
+                    scene["text_jp"] = to_hiragana(scene["text"]) 
+                    changed = True
+                except Exception:
+                    pass
         if changed:
             script_data["scenes"] = scenes
         return script_data
@@ -166,6 +174,16 @@ class ScriptEditor:
         # 部分更新
         if scene_update.text is not None:
             updated_scene["text"] = scene_update.text
+        # text_jp 明示更新があれば優先
+        if getattr(scene_update, "text_jp", None) is not None:
+            updated_scene["text_jp"] = scene_update.text_jp
+        elif scene_update.text is not None:
+            # text が更新されたが text_jp 未指定なら自動生成
+            try:
+                from app.modules.kana_converter import to_hiragana
+                updated_scene["text_jp"] = to_hiragana(scene_update.text)
+            except Exception:
+                pass
         if scene_update.voice_settings is not None:
             updated_scene["voice_settings"] = scene_update.voice_settings.dict()
         if scene_update.duration is not None:

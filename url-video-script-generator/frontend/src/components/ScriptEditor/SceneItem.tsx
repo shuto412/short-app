@@ -71,6 +71,12 @@ const SceneItem: React.FC<SceneItemProps> = ({
         <div className="scene-text">
           <h4>テキスト</h4>
           <p>{truncateText(scene.text)}</p>
+          {scene.text_jp && (
+            <>
+              <h4>読み（ひらがな）</h4>
+              <p>{truncateText(scene.text_jp)}</p>
+            </>
+          )}
         </div>
 
         <div className="scene-voice-settings">

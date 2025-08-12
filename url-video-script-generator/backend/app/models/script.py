@@ -12,6 +12,7 @@ class Scene(BaseModel):
     duration: float
     text: str
     voice_settings: VoiceSettings
+    text_jp: Optional[str] = None
 
 class ScriptMetadata(BaseModel):
     project_id: str

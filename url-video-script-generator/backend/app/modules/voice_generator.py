@@ -316,7 +316,7 @@ class VoiceGenerator:
         for scene in script["scenes"]:
             segment = {
                 "segment_id": scene["scene_id"],
-                "text": scene["text"],
+                "text": scene.get("text_jp") or scene["text"],
                 "start_time": current_time,
                 "end_time": current_time + scene["duration"],
                 "parameters": {

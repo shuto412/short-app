@@ -245,6 +245,7 @@ export interface EditableScene {
   scene_type: 'opening' | 'main_content' | 'explanation' | 'demonstration' | 'conclusion' | 'cta';
   duration: number;
   text: string;
+  text_jp?: string;
   voice_settings: EditableVoiceSettings;
   is_edited?: boolean;
 }
@@ -273,6 +274,7 @@ export interface ScriptEditResponse {
 
 export interface SceneUpdateRequest {
   text?: string;
+  text_jp?: string;
   voice_settings?: EditableVoiceSettings;
   duration?: number;
   scene_type?: 'opening' | 'main_content' | 'explanation' | 'demonstration' | 'conclusion' | 'cta';

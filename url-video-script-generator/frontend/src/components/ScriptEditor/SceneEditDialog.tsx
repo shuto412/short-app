@@ -20,6 +20,7 @@ const SceneEditDialog: React.FC<SceneEditDialogProps> = ({
 }) => {
   const [formData, setFormData] = useState<Partial<EditableScene>>({
     text: scene.text,
+    text_jp: scene.text_jp,
     scene_type: scene.scene_type,
     duration: scene.duration,
   });
@@ -38,6 +39,7 @@ const SceneEditDialog: React.FC<SceneEditDialogProps> = ({
     if (open) {
       setFormData({
         text: scene.text,
+        text_jp: scene.text_jp,
         scene_type: scene.scene_type,
         duration: scene.duration,
       });
@@ -50,7 +52,7 @@ const SceneEditDialog: React.FC<SceneEditDialogProps> = ({
     if (!open) return;
     if (userEditedDuration) return;
     const speed = scene.voice_settings?.speed ?? 1.0;
-    const estimated = computeEstimatedDuration(formData.text || '', speed);
+    const estimated = computeEstimatedDuration(formData.text_jp || formData.text || '', speed);
     if (typeof formData.duration !== 'number' || Math.abs(estimated - formData.duration) >= 0.1) {
       setFormData((prev) => ({ ...prev, duration: estimated }));
     }
@@ -129,6 +131,18 @@ const SceneEditDialog: React.FC<SceneEditDialogProps> = ({
               value={formData.text || ''}
               onChange={(e) => handleInputChange('text', e.target.value)}
               placeholder="シーンのテキストを入力してください"
+            />
+          </div>
+
+          {/* 読み（ひらがな） */}
+          <div className="form-group">
+            <label htmlFor="text_jp">読み（ひらがな）</label>
+            <textarea
+              id="text_jp"
+              rows={6}
+              value={formData.text_jp || ''}
+              onChange={(e) => handleInputChange('text_jp', e.target.value)}
+              placeholder="ひらがなで読みを入力してください"
             />
           </div>
         </div>

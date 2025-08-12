@@ -123,6 +123,7 @@ export const useScriptEditor = ({ projectId, initialScript }: UseScriptEditorPro
       // APIでシーンを更新
       const updateRequest: SceneUpdateRequest = {
         ...(updates.text !== undefined && { text: updates.text }),
+        ...(updates.text_jp !== undefined && { text_jp: updates.text_jp }),
         ...(updates.voice_settings !== undefined && { voice_settings: updates.voice_settings }),
         ...(updates.duration !== undefined && { duration: updates.duration }),
         ...(updates.scene_type !== undefined && { scene_type: updates.scene_type })

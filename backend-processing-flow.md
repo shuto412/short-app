@@ -106,7 +106,7 @@ async def process_project_task(project_id: str, url: str, scenario_type: str, vo
 
 **技術仕様**:
 - **Claude API**を使用してコンテンツを要約
-- **プロンプト**: 動画制作に適した情報を中心に500文字以内で要約
+- **プロンプト**: 動画制作に適した情報を中心に1000文字以内で要約
 - **フォールバック**: API利用不可時は元テキストの最初の500文字を使用
 
 **出力**: `summary.txt`
