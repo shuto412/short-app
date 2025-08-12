@@ -23,6 +23,16 @@ const SceneEditDialog: React.FC<SceneEditDialogProps> = ({
     scene_type: scene.scene_type,
     duration: scene.duration,
   });
+  const [userEditedDuration, setUserEditedDuration] = useState<boolean>(false);
+
+  const computeEstimatedDuration = (text: string, speed: number): number => {
+    const charsPerMinute = 300; // 日本語の平均読み上げ速度
+    const charsPerSecond = (charsPerMinute / 60) * (speed || 1.0);
+    const length = (text || '').length;
+    const rawSeconds = charsPerSecond > 0 ? length / charsPerSecond : length / 5.0;
+    const clamped = Math.max(1, Math.min(300, rawSeconds));
+    return Math.round(clamped * 10) / 10; // 小数1桁
+  };
 
   useEffect(() => {
     if (open) {
@@ -31,8 +41,20 @@ const SceneEditDialog: React.FC<SceneEditDialogProps> = ({
         scene_type: scene.scene_type,
         duration: scene.duration,
       });
+      setUserEditedDuration(false);
     }
   }, [scene, open]);
+
+  // テキスト変更時に、ユーザーが時間を手動編集していない場合のみ自動推定で反映
+  useEffect(() => {
+    if (!open) return;
+    if (userEditedDuration) return;
+    const speed = scene.voice_settings?.speed ?? 1.0;
+    const estimated = computeEstimatedDuration(formData.text || '', speed);
+    if (typeof formData.duration !== 'number' || Math.abs(estimated - formData.duration) >= 0.1) {
+      setFormData((prev) => ({ ...prev, duration: estimated }));
+    }
+  }, [open, userEditedDuration, formData.text, scene.voice_settings]);
 
   const handleInputChange = (field: string, value: any) => {
     setFormData((prev: Partial<EditableScene>) => ({
@@ -88,7 +110,13 @@ const SceneEditDialog: React.FC<SceneEditDialogProps> = ({
               min="0.1"
               step="0.1"
               value={formData.duration || 0}
-              onChange={(e) => handleInputChange('duration', parseFloat(e.target.value))}
+              onChange={(e) => {
+                const val = parseFloat(e.target.value);
+                if (!Number.isNaN(val)) {
+                  setUserEditedDuration(true);
+                  handleInputChange('duration', val);
+                }
+              }}
             />
           </div>
 
