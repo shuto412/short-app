@@ -43,3 +43,9 @@ templates:
     file: "storytelling.yaml"
     category: "物語"
     tags: ["ストーリー", "感情", "体験"]
+
+  mouselog_temp1:
+    file: "mouselog_temp1.yaml"
+    category: "マウスログ"
+    tags: ["マウスログ", "ゲーミングマウス", "製品紹介"]
+
