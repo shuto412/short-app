@@ -23,7 +23,7 @@ class ClaudeClient:
             raise ValueError(f"Claude client initialization failed: {str(e)}")
         self.max_tokens = 4000
     
-    async def summarize(self, content: str, max_length: int = 500) -> str:
+    async def summarize(self, content: str, max_length: int = 1000) -> str:
         """
         コンテンツを要約
         
@@ -40,17 +40,30 @@ class ClaudeClient:
             prompt = f'''以下のコンテンツを{max_length}文字以内で要約してください。
 重要なポイントを箇条書きで抽出し、動画制作に役立つ情報を中心にまとめてください。
 
-要約のポイント:
-- 主要な内容・特徴
-- 重要なメリット・利点
-- 重要なメリット・利点にて解消される課題（重要なメリット・利点を説明するために解消される課題を記載）
-- 特筆すべき機能や詳細
-- ターゲットや用途
+
+以下の構成で必ず出力してください：
+
+1. 主要な内容・特徴
+   - 製品の基本的な特徴や概要
+
+2. 重要なメリット・利点
+   - 製品の主要なメリットや利点
+
+3. 解消される課題
+   - 上記のメリット・利点によって解決される具体的な課題や問題点
+
+4. 特筆すべき機能や詳細
+   - 製品の特徴的な機能や技術的な詳細
+
+5. ターゲットや用途
+   - 製品の対象ユーザーや使用シーン
+
+各セクションは必ず含めてください。特に「解消される課題」の部分は、メリット・利点と直接関連する課題を具体的に記載してください。
 
 コンテンツ:
 {content}
 
-要約:'''
+上記の構成で要約してください:'''
             
             message = self.client.messages.create(
                 model="claude-3-haiku-20240307",
