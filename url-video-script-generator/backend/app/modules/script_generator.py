@@ -180,16 +180,35 @@ class ScriptGenerator:
     
     def _create_generation_prompt(self, summary: str, template: Dict, target_duration: int) -> str:
         """台本生成用プロンプトを作成"""
+        # テンプレートの詳細情報を含める
+        template_description = template.get('description', '')
+        
+        # 各セクションの詳細説明を含める
         structure_info = "\n".join([
-            f"- {section['name']} ({int(section['duration_ratio'] * target_duration)}秒): {section['section']}"
+            f"- {section['name']} ({int(section['duration_ratio'] * target_duration)}秒): {section['section']}\n"
+            f"  詳細: {section.get('description', '詳細説明なし')}"
             for section in template['structure']
         ])
+        
+        # 音声設定情報も含める
+        voice_settings = template.get('voice_settings', {})
+        voice_info = f"""
+音声設定:
+- 感情: {voice_settings.get('emotion', 'neutral')}
+- 速度: {voice_settings.get('speed', 1.0)}
+- ピッチ: {voice_settings.get('pitch', 1.0)}
+- 音量: {voice_settings.get('volume', 1.0)}
+"""
         
         prompt = f'''以下の要約から{target_duration}秒の動画台本を生成してください。
 
 シナリオタイプ: {template['name']}
-構成:
+テンプレート説明: {template_description}
+
+構成と詳細:
 {structure_info}
+
+{voice_info}
 
 要約:
 {summary}
@@ -199,10 +218,11 @@ class ScriptGenerator:
 1. 自然で聞きやすい日本語
 2. 動画視聴者に向けた親しみやすい語りかけ
 3. 指定された時間配分に従った構成
-4. 各セクションに適切な感情やトーンの指定
-5. 各シーンは text（原文）と text_jp（原文のひらがな表記）の両方を含めること
-6. text_jp は必ず全てひらがなで出力すること（漢字・カタカナ・英語・数字を含めない）、text_jp は音声生成AIへプロンプトとして送られる文章なので、textのよみがなをひらがなで出力すること
-
+4. 各セクションの詳細説明に基づいた内容
+5. 指定された音声設定に適した感情やトーン
+6. 要約から具体的な製品名やサービス名を抽出し、各セクションで適切に使用すること
+7. 各シーンは text（原文）と text_jp（原文のひらがな表記）の両方を含めること
+8. text_jp は必ず全てひらがなで出力すること（漢字・カタカナ・英語・数字を含めない）、text_jp は音声生成AIへプロンプトとして送られる文章なので、textのよみがなをひらがなで出力すること
 
 以下のJSON形式で出力してください:
 {{
@@ -210,13 +230,13 @@ class ScriptGenerator:
         {{
             "scene_id": 1,
             "scene_type": "opening",
-            "duration": 9.0,
-            "text": "こんにちは！今日は素晴らしい製品をご紹介します。",
-            "text_jp": "こんにちは！きょうはすばらしいせいひんをごしょうかいします。",
+            "duration": {int(template['structure'][0]['duration_ratio'] * target_duration)},
+            "text": "こんにちは！マウスログです、今回は製品をご紹介します。",
+            "text_jp": "こんにちは！まうすろぐです、こんかいはせいひんをごしょうかいします。",
             "voice_settings": {{
-                "emotion": "cheerful",
-                "speed": 1.0,
-                "pitch": 1.0
+                "emotion": "{voice_settings.get('emotion', 'neutral')}",
+                "speed": {voice_settings.get('speed', 1.0)},
+                "pitch": {voice_settings.get('pitch', 1.0)}
             }}
         }}
     ]
