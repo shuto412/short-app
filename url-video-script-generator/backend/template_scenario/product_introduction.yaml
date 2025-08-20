@@ -4,19 +4,19 @@ structure:
   - section: "opening"
     name: "オープニング"
     duration_ratio: 0.15
-    description: "視聴者の注意を引き、製品への興味を喚起"
+    description: "こんにちは！今回は{product_name}をご紹介します。{product_description}を簡単に説明しますね。"
   - section: "problem"
     name: "課題提示"
     duration_ratio: 0.25
-    description: "製品が解決する問題や課題を明確化"
+    description: "{product_name}が解決する問題や課題を明確化し、なぜこの製品が必要なのかを説明します。"
   - section: "solution"
     name: "解決策"
     duration_ratio: 0.45
-    description: "製品の機能と解決方法を詳しく説明"
+    description: "{product_name}の主要機能である{features}について詳しく説明し、{weight}の軽さと{dimensions}のサイズ感、そして{price}の価格設定についても触れます。"
   - section: "cta"
     name: "行動喚起"
     duration_ratio: 0.15
-    description: "視聴者に次のアクションを促す"
+    description: "視聴者に{product_name}の詳しい情報を確認し、次のアクションを促す"
 voice_settings:
   emotion: "confident"
   speed: 1.0

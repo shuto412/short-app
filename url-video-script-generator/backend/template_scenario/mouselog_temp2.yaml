@@ -1,14 +1,14 @@
 name: "ゲーミングマウス製品紹介"
 description: "製品の特徴と利点を効果的に紹介するシナリオ"
 structure:
-  - section: "opening"
-    name: "オープニング"
-    duration_ratio: 0.15
-    description: "こんにちは！マウスログです、今回は{product_name}をご紹介します！！"
   - section: "problem"
     name: "これまでのゲーミングマウスの課題"
+    duration_ratio: 0.15
+    description: "ゲーミングマウスを使っているときに、〇〇（製品のメリットで解消できること）に困ったことはありませんか？"
+  - section: "opening"
+    name: "オープニング"
     duration_ratio: 0.25
-    description: "これまでのゲーミングマウスであった課題について説明し、{product_name}がどのように解決するかを示します。"
+    description: "こんにちは！マウスログです、今回は〇〇を解消するゲーミングマウス、{product_name}をご紹介します！！(この製品名の部分は確実に生成してください)"
   - section: "solution"
     name: "紹介するゲーミングマウスのメリットで解決"
     duration_ratio: 0.45

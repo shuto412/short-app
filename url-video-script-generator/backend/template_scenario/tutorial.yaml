@@ -4,19 +4,19 @@ structure:
   - section: "intro"
     name: "導入"
     duration_ratio: 0.1
-    description: "チュートリアルの目的と内容を紹介"
+    description: "こんにちは！今回は{product_name}の使い方についてチュートリアルをお届けします。{product_description}の基本的な操作方法を学んでいきましょう。"
   - section: "overview"
     name: "概要説明"
     duration_ratio: 0.2
-    description: "全体の流れと必要な準備を説明"
+    description: "{product_name}の全体の流れと必要な準備、{features}の基本的な機能について説明します。"
   - section: "steps"
     name: "手順説明"
     duration_ratio: 0.6
-    description: "具体的な手順を段階的に説明"
+    description: "{product_name}の具体的な手順を段階的に説明し、{weight}の軽さを活かした使い方のコツもお伝えします。"
   - section: "conclusion"
     name: "まとめ"
     duration_ratio: 0.1
-    description: "要点のまとめと次のステップを提示"
+    description: "{product_name}の使い方の要点をまとめ、次のステップとして{dimensions}のサイズ感を活かした応用的な使い方も提案します。"
 voice_settings:
   emotion: "friendly"
   speed: 0.95

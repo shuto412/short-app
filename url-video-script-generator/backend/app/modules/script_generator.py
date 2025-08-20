@@ -43,6 +43,10 @@ class ScriptGenerator:
             # テンプレート読み込み
             template = self._load_template(scenario_type)
             
+            # summary.yamlからデータを抽出してテンプレート変数を置換
+            summary_data = self._parse_summary_yaml(summary)
+            template = self._replace_template_variables(template, summary_data)
+            
             # タイトル生成（未指定の場合）
             if not title:
                 if self.claude:
@@ -183,7 +187,7 @@ class ScriptGenerator:
         # テンプレートの詳細情報を含める
         template_description = template.get('description', '')
         
-        # 各セクションの詳細説明を含める
+        # 各セクションの詳細説明を含める（変数置換後の内容）
         structure_info = "\n".join([
             f"- {section['name']} ({int(section['duration_ratio'] * target_duration)}秒): {section['section']}\n"
             f"  詳細: {section.get('description', '詳細説明なし')}"
@@ -199,6 +203,11 @@ class ScriptGenerator:
 - ピッチ: {voice_settings.get('pitch', 1.0)}
 - 音量: {voice_settings.get('volume', 1.0)}
 """
+        
+        # 最初のセクションの説明をサンプルテキストとして使用
+        first_section = template['structure'][0] if template['structure'] else {}
+        sample_text = first_section.get('description', '製品をご紹介します')
+        sample_text_jp = self._convert_to_hiragana(sample_text)
         
         prompt = f'''以下の要約から{target_duration}秒の動画台本を生成してください。
 
@@ -218,21 +227,21 @@ class ScriptGenerator:
 1. 自然で聞きやすい日本語
 2. 動画視聴者に向けた親しみやすい語りかけ
 3. 指定された時間配分に従った構成
-4. 各セクションの詳細説明に基づいた内容
+4. 各セクションの詳細説明に基づいた内容（上記の詳細説明を参考にすること）
 5. 指定された音声設定に適した感情やトーン
 6. 要約から具体的な製品名やサービス名を抽出し、各セクションで適切に使用すること
 7. 各シーンは text（原文）と text_jp（原文のひらがな表記）の両方を含めること
 8. text_jp は必ず全てひらがなで出力すること（漢字・カタカナ・英語・数字を含めない）、text_jp は音声生成AIへプロンプトとして送られる文章なので、textのよみがなをひらがなで出力すること
 
-以下のJSON形式で出力してください:
+以下の様なJSON形式で出力してください:
 {{
     "scenes": [
         {{
             "scene_id": 1,
-            "scene_type": "opening",
-            "duration": {int(template['structure'][0]['duration_ratio'] * target_duration)},
-            "text": "こんにちは！マウスログです、今回は製品をご紹介します。",
-            "text_jp": "こんにちは！まうすろぐです、こんかいはせいひんをごしょうかいします。",
+            "scene_type": "{first_section.get('section', 'opening')}",
+            "duration": {int(first_section.get('duration_ratio', 0.2) * target_duration)},
+            "text": "{sample_text}",
+            "text_jp": "{sample_text_jp}",
             "voice_settings": {{
                 "emotion": "{voice_settings.get('emotion', 'neutral')}",
                 "speed": {voice_settings.get('speed', 1.0)},
@@ -240,7 +249,9 @@ class ScriptGenerator:
             }}
         }}
     ]
-}}'''
+}}
+
+注意: 上記の詳細説明に含まれる具体的な製品名や機能名を必ず使用してください。'''
         
         return prompt
     
@@ -442,3 +453,157 @@ class ScriptGenerator:
         # JSONとして返す
         import json
         return json.dumps({"scenes": scenes}, ensure_ascii=False, indent=2)
+
+    def _replace_template_variables(self, template: Dict, summary_data: Dict) -> Dict:
+        """テンプレート内の変数をsummary.yamlの値で置換"""
+        try:
+            # テンプレートをディープコピー
+            import copy
+            replaced_template = copy.deepcopy(template)
+            
+            # 利用可能な変数を定義
+            variables = {
+                'product_name': summary_data.get('product_info', {}).get('product_name', '製品'),
+                'product_description': summary_data.get('product_info', {}).get('description', '製品の説明'),
+                'price': self._format_price_info(summary_data.get('product_info', {}).get('price', [])),
+                'features': self._format_features_info(summary_data.get('product_info', {}).get('specifications', {}).get('features', [])),
+                'weight': summary_data.get('product_info', {}).get('specifications', {}).get('weight', '重量不明'),
+                'dimensions': self._format_dimensions_info(summary_data.get('product_info', {}).get('specifications', {}).get('dimensions', {}))
+            }
+            
+            # テンプレート内の変数を置換
+            replaced_template = self._replace_variables_in_dict(replaced_template, variables)
+            
+            logger.info(f"Template variables replaced successfully")
+            return replaced_template
+            
+        except Exception as e:
+            logger.warning(f"Failed to replace template variables: {str(e)}, using original template")
+            return template
+    
+    def _replace_variables_in_dict(self, data: any, variables: Dict) -> any:
+        """辞書内の文字列に含まれる変数を置換"""
+        if isinstance(data, dict):
+            return {key: self._replace_variables_in_dict(value, variables) for key, value in data.items()}
+        elif isinstance(data, list):
+            return [self._replace_variables_in_dict(item, variables) for item in data]
+        elif isinstance(data, str):
+            # 文字列内の変数を置換
+            for var_name, var_value in variables.items():
+                placeholder = f"{{{var_name}}}"
+                if placeholder in data:
+                    data = data.replace(placeholder, str(var_value))
+            return data
+        else:
+            return data
+    
+    def _format_price_info(self, price_list: List[str]) -> str:
+        """価格情報を整形"""
+        if not price_list:
+            return "価格不明"
+        return "、".join(price_list)
+    
+    def _format_features_info(self, features: List[str]) -> str:
+        """機能情報を整形"""
+        if not features:
+            return "機能詳細不明"
+        return "、".join(features[:3])  # 最初の3つの機能のみ表示
+    
+    def _format_dimensions_info(self, dimensions: Dict) -> str:
+        """寸法情報を整形"""
+        if not dimensions:
+            return "寸法不明"
+        
+        parts = []
+        if 'length' in dimensions:
+            parts.append(f"長さ{dimensions['length']}")
+        if 'width' in dimensions:
+            parts.append(f"幅{dimensions['width']}")
+        if 'height' in dimensions:
+            parts.append(f"高さ{dimensions['height']}")
+        
+        return "×".join(parts) if parts else "寸法不明"
+    
+    def _parse_summary_yaml(self, summary: str) -> Dict:
+        """summary文字列をYAMLとして解析"""
+        try:
+            # summaryがYAML文字列の場合
+            if summary.strip().startswith('metadata:'):
+                return yaml.safe_load(summary)
+            else:
+                # プレーンテキストの場合は空の辞書を返す
+                return {}
+        except Exception as e:
+            logger.warning(f"Failed to parse summary as YAML: {str(e)}")
+            return {}
+    
+    def _convert_to_hiragana(self, text: str) -> str:
+        """テキストをひらがなに変換（簡易版）"""
+        # 基本的な変換ルール
+        conversions = {
+            'こんにちは': 'こんにちは',
+            'マウスログ': 'まうすろぐ',
+            '今回は': 'こんかいは',
+            'をご紹介します': 'をごしょうかいします',
+            '製品': 'せいひん',
+            'について': 'について',
+            '詳しく': 'くわしく',
+            '説明': 'せつめい',
+            '機能': 'きのう',
+            '軽さ': 'かるさ',
+            'サイズ感': 'さいずかん',
+            '価格設定': 'かかくせってい',
+            '情報': 'じょうほう',
+            'サイト': 'さいと',
+            '御覧ください': 'ごらんください',
+            'Xlite CrazyLight Gaming Mouse': 'えっくすらいとくれいじーらいとげーみんぐまうす',
+            '競技eスポーツ': 'きょうぎいーすぽーつ',
+            '最適化': 'さいてきか',
+            '軽量': 'けいりょう',
+            'ゲーミングマウス': 'げーみんぐまうす',
+            '人間工学': 'にんげんこうがく',
+            'デザイン': 'でざいん',
+            '長時間': 'ちょうじかん',
+            'ゲームプレイ': 'げーむぷれい',
+            '快適性': 'かいてきせい',
+            '提供': 'ていきょう',
+            '先進的': 'せんしんてき',
+            '搭載': 'とうさい',
+            '究極': 'きゅうきょく',
+            '体験': 'たいけん',
+            '実現': 'じつげん',
+            '驚異的': 'きょういてき',
+            '右利き用': 'みぎききよう',
+            '形状': 'かたち',
+            'XS-1': 'えっくすえすわん',
+            'フラッグシップ': 'ふらっぐしっぷ',
+            'センサー': 'せんさー',
+            '最大': 'さいだい',
+            '8K': 'はちけー',
+            'ポーリングレート': 'ぽーりんぐれーと',
+            '対応': 'たいおう',
+            '1億回': 'いちおくかい',
+            'クリック': 'くりっく',
+            '耐久': 'たいきゅう',
+            'Pulsar': 'ぱるさー',
+            '光学': 'こうがく',
+            'スイッチ': 'すいっち',
+            '細かな': 'こまかな',
+            'DPI': 'でぃーぴーあい',
+            '設定': 'せってい',
+            '可能': 'かのう',
+            '軽量プラスチック': 'けいりょうぷらすちっく',
+            'ケーブル': 'けーぶる',
+            '別売り': 'べつうり',
+            'ワイヤレス': 'わいやれす',
+            'ドングル': 'どんぐる',
+            'Size 1': 'さいずわん',
+            'dot skates': 'どっとすけーつ',
+            'regular skates': 'れぎゅらーすけーつ',
+        }
+        
+        result = text
+        for kanji, hiragana in conversions.items():
+            result = result.replace(kanji, hiragana)
+        
+        return result

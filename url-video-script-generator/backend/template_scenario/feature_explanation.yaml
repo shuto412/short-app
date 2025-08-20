@@ -4,15 +4,15 @@ structure:
   - section: "intro"
     name: "導入"
     duration_ratio: 0.2
-    description: "機能の概要と重要性を紹介"
+    description: "こんにちは！今回は{product_name}の{features}について詳しく解説します。{product_description}の中でも特に注目すべき機能について見ていきましょう。"
   - section: "features"
     name: "機能詳細"
     duration_ratio: 0.6
-    description: "機能の詳細な説明とデモンストレーション"
+    description: "{product_name}の{features}の詳細な説明とデモンストレーションを行い、{weight}の軽さや{dimensions}のサイズ感がどのように機能に影響するかも説明します。"
   - section: "benefits"
     name: "利点・効果"
     duration_ratio: 0.2
-    description: "機能を使うことのメリットと効果を説明"
+    description: "{product_name}の{features}を使うことのメリットと効果を説明し、{price}の価格設定に対する価値も含めて総合的に評価します。"
 voice_settings:
   emotion: "informative"
   speed: 1.0

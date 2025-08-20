@@ -49,3 +49,7 @@ templates:
     category: "マウスログ"
     tags: ["マウスログ", "ゲーミングマウス", "製品紹介"]
 
+  mouselog_temp2:
+    file: "mouselog_temp2.yaml"
+    category: "マウスログ"
+    tags: ["マウスログ", "ゲーミングマウス", "製品紹介", "課題解消"]

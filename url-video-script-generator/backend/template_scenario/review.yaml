@@ -4,19 +4,19 @@ structure:
   - section: "introduction"
     name: "紹介"
     duration_ratio: 0.15
-    description: "レビュー対象の基本情報を紹介"
+    description: "こんにちは！今回は{product_name}のレビューをお届けします。{product_description}について詳しく見ていきましょう。"
   - section: "positive_points"
     name: "良い点"
     duration_ratio: 0.35
-    description: "優れている点や特長を詳しく説明"
+    description: "{product_name}の優れている点や特長である{features}について詳しく説明し、{weight}の軽さや{dimensions}のサイズ感なども評価します。"
   - section: "concerns"
     name: "気になる点"
     duration_ratio: 0.25
-    description: "改善点や注意点を客観的に指摘"
+    description: "{product_name}の改善点や注意点を客観的に指摘し、{price}の価格設定についても検討します。"
   - section: "verdict"
     name: "総合評価"
     duration_ratio: 0.25
-    description: "総合的な評価と推奨度を提示"
+    description: "{product_name}の総合的な評価と推奨度を提示し、どのような方におすすめかをまとめます。"
 voice_settings:
   emotion: "analytical"
   speed: 1.0
