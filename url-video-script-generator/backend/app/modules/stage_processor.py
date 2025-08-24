@@ -86,14 +86,50 @@ class StageProcessor:
         """段階3: 台本生成"""
         try:
             logger.info(f"[Stage] Script generation start: {project_id}")
+            
+            # summary.yamlとsummary.txtの両方を読み込み
+            summary_data = None
+            summary_text = None
+            
+            # summary.yamlを読み込み（構造化データ）
+            try:
+                summary_data = await self.file_manager.read_file(project_id, "summary.yaml")
+                logger.info(f"Loaded summary.yaml for project: {project_id}")
+            except Exception as e:
+                logger.warning(f"Failed to load summary.yaml: {e}")
+                summary_data = {}
+            
+            # summary.txtを読み込み（テキスト要約）
             try:
                 summary_text = await self.file_manager.read_file(project_id, "summary.txt")
-            except Exception:
-                # フォールバック: scraped_contentから作成
-                scraped_content = await self.file_manager.read_file(project_id, "scraped_content.txt")
-                summary_text = scraped_content[:500] + "..." if len(scraped_content) > 500 else scraped_content
+                logger.info(f"Loaded summary.txt for project: {project_id}")
+            except Exception as e:
+                logger.warning(f"Failed to load summary.txt: {e}")
+                summary_text = ""
+            
+            # 両方のファイルが読み込めない場合のフォールバック
+            if not summary_data and not summary_text:
+                try:
+                    scraped_content = await self.file_manager.read_file(project_id, "scraped_content.txt")
+                    summary_text = scraped_content[:500] + "..." if len(scraped_content) > 500 else scraped_content
+                    logger.info(f"Using scraped_content as fallback for project: {project_id}")
+                except Exception as e:
+                    logger.error(f"Failed to load any summary files: {e}")
+                    raise Exception("No summary data available for script generation")
+            
+            # 台本生成に渡すデータを準備
+            # summary_data（YAML）とsummary_text（テキスト）の両方を渡す
+            if summary_data:
+                # YAMLデータがある場合は、それを文字列として渡す（テンプレート変数置換用）
+                summary_for_generation = str(summary_data)
+                if summary_text:
+                    # テキスト要約も追加
+                    summary_for_generation += f"\n\nテキスト要約:\n{summary_text}"
+            else:
+                # YAMLがない場合は、テキスト要約のみ
+                summary_for_generation = summary_text
 
-            script = await self.script_generator.generate(summary_text, scenario_type)
+            script = await self.script_generator.generate(summary_for_generation, scenario_type)
             # メタデータに project_id を付与
             if "metadata" in script and isinstance(script["metadata"], dict):
                 script["metadata"]["project_id"] = project_id

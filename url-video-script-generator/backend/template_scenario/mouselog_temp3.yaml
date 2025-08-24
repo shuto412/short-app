@@ -1,0 +1,24 @@
+name: "ゲーミングマウス製品紹介 新製品紹介"
+description: "製品の特徴と利点を効果的に紹介するシナリオ"
+structure:
+  - section: "opening"
+    name: "新発売商品紹介 "
+    duration_ratio: 0.15
+    description: "こんにちは！マウスログです、今回は新発売のゲーミングマウス、{product_name}をご紹介します！！(この製品名の部分は確実に生成してください)"
+  - section: "solution"
+    name: "新製品のについて軽く説明"
+    duration_ratio: 0.25
+    description: "新発売された{product_name}の性能{features}について。"
+  - section: "solution" 
+    name: "紹介するゲーミングマウスのメリットで解決"
+    duration_ratio: 0.45
+    description: "{product_name}の主要機能である{features}について詳しく説明し、{weight}の軽さと{dimensions}のサイズ感、そして{price}の価格設定についても触れます。"
+  - section: "cta"
+    name: "行動喚起"
+    duration_ratio: 0.15
+    description: "視聴者にマウスログで検索し、{product_name}の詳しい情報はサイトで御覧くださいと促す"
+voice_settings:
+  emotion: "confident"
+  speed: 1.0
+  pitch: 1.0
+  volume: 1.0

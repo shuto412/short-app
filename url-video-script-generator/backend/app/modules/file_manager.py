@@ -51,7 +51,11 @@ class FileManager:
         elif filename.endswith(('.wav', '.mp3', '.mp4')):
             async with aiofiles.open(file_path, 'rb') as f:
                 return await f.read()
+        elif filename.endswith('.txt'):  # ← .txtファイルを明示的に処理
+            async with aiofiles.open(file_path, 'r', encoding='utf-8') as f:
+                return await f.read()
         else:
+            # その他のテキストファイル
             async with aiofiles.open(file_path, 'r', encoding='utf-8') as f:
                 return await f.read()
     
