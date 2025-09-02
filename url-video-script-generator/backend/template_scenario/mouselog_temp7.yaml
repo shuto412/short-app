@@ -1,0 +1,24 @@
+name: "ゲーミングマウス紹介_変化実感　万人向け"
+description: "使用前後の変化を明確に示し、視聴完了率を高めるシナリオ"
+structure:
+  - section: "before"
+    name: "ビフォー状況"
+    duration_ratio: 0.15
+    description: "合わないマウスでエイムがブレる...手首が痛い...そんな日々とはもうサヨナラ！、そのマウス、あなたにあってますか？"
+  - section: "transformation"
+    name: "変化の瞬間"
+    duration_ratio: 0.30
+    description: "{product_name}は{weight}の軽さと{features}で万人向けのマウスです！"
+  - section: "proof"
+    name: "証拠提示"
+    duration_ratio: 0.30
+    description: "手が小さかったり、大きかったりするとプレイに支障が出ます。でも{product_name}ならどんな手にもピッタリです！"
+  - section: "series_cta"
+    name: "シリーズ化CTA"
+    duration_ratio: 0.25
+    description: "MouseLogで詳細レビューをチェックしてみてね！"
+voice_settings:
+  emotion: "transformative"
+  speed: 1.05
+  pitch: 1.02
+  volume: 1.0

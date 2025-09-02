@@ -1,0 +1,24 @@
+name: "ゲーミングマウス紹介_驚きの事実"
+description: "冒頭3秒で驚きの事実を提示し、視聴完了率を最大化するシナリオ"
+structure:
+  - section: "hook"
+    name: "驚きのフック"
+    duration_ratio: 0.10
+    description: "実は{product_name}、プロゲーマーの〇〇％が愛用している{weight}の超軽量マウスなんです！"
+  - section: "problem_solution"
+    name: "問題と解決"
+    duration_ratio: 0.30
+    description: "手の大きさにピッタリ合うマウスが見つからない...そんなあなたに！{product_name}がおすすめです！"
+  - section: "unique_value"
+    name: "MouseLogの独自価値"
+    duration_ratio: 0.35
+    description: "{product_name}の{features}について詳しく説明し、{weight}の軽さと{dimensions}のサイズ感を触れます。"
+  - section: "urgency_cta"
+    name: "緊急性とCTA"
+    duration_ratio: 0.25
+    description: "{product_name}の価格は{price}です、MouseLogで『{product_name}』を検索して、あなたの手に合うか今すぐチェック！"
+voice_settings:
+  emotion: "excited"
+  speed: 1.15
+  pitch: 1.05
+  volume: 1.0

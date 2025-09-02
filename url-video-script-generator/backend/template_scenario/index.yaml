@@ -53,3 +53,23 @@ templates:
     file: "mouselog_temp2.yaml"
     category: "マウスログ"
     tags: ["マウスログ", "ゲーミングマウス", "製品紹介", "課題解消"]
+
+  mouselog_temp4:
+    file: "mouselog_temp4.yaml"
+    category: "マウスログ"
+    tags: ["マウスログ", "ゲーミングマウス", "製品紹介", "課題解消"]
+
+  mouselog_temp5:
+    file: "mouselog_temp5.yaml"
+    category: "マウスログ"
+    tags: ["マウスログ", "ゲーミングマウス", "製品紹介", "課題解消"]
+
+  mouselog_temp6:
+    file: "mouselog_temp6.yaml"
+    category: "マウスログ"
+    tags: ["マウスログ", "ゲーミングマウス", "製品紹介", "課題解消"]
+
+  mouselog_temp7:
+    file: "mouselog_temp7.yaml"
+    category: "マウスログ"
+    tags: ["マウスログ", "ゲーミングマウス", "製品紹介", "課題解消"]

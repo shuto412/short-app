@@ -1,0 +1,24 @@
+name: "ゲーミングマウス紹介_質問フック"
+description: "視聴者への問いかけで興味を引き、エンゲージメントを促進するシナリオ　大きめのマウス紹介"
+structure:
+  - section: "question_hook"
+    name: "質問フック"
+    duration_ratio: 0.12
+    description: "あなたの手のサイズ、何センチですか？実はマウス選びで一番重要なのが手の大きさです！"
+  - section: "reveal"
+    name: "製品紹介"
+    duration_ratio: 0.28
+    description: "今回紹介する{product_name}は大きめの手にベストマッチ！{weight}で長時間プレイでも疲れない！"
+  - section: "features_demo"
+    name: "機能デモ"
+    duration_ratio: 0.35
+    description: "{product_name}の主要機能である{features}について詳しく説明し、{weight}の軽さと{dimensions}のサイズ感、そして{price}の価格設定についても触れます。"
+  - section: "interactive_cta"
+    name: "インタラクティブCTA"
+    duration_ratio: 0.25
+    description: "あなたの手のサイズをコメントで教えて！MouseLogで同じサイズのレビューをチェックしてみてね"
+voice_settings:
+  emotion: "curious"
+  speed: 1.1
+  pitch: 1.0
+  volume: 1.0
