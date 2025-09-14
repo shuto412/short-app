@@ -6,8 +6,11 @@ import { ScenarioSelector } from './components/ScenarioSelector';
 import { VoiceActorSelector } from './components/VoiceActorSelector';
 import { ProgressDisplay } from './components/ProgressDisplay';
 import { ResultViewer } from './components/ResultViewer';
+import { InformationSourceSelector } from './components/InformationSourceSelector';
+import { MarkdownUploader } from './components/MarkdownUploader';
+import { MarkdownPreview } from './components/MarkdownPreview';
 import { projectAPI, generationAPI } from './services/api';
-import type { AppState, Scenario, VoiceActor, Project, GeneratedFile } from './types';
+import type { AppState, Scenario, VoiceActor, Project, GeneratedFile, MarkdownData } from './types';
 
 // React Query クライアント設定
 const queryClient = new QueryClient({
@@ -37,7 +40,7 @@ const theme = createTheme({
 
 function App() {
   // 状態管理
-  const [appState, setAppState] = useState<AppState>('url-input');
+  const [appState, setAppState] = useState<AppState>('information-source-selection');
   const [projectId, setProjectId] = useState<string>('');
   const [url, setUrl] = useState<string>('');
   const [scenarioType, setScenarioType] = useState<string>('');
@@ -48,6 +51,8 @@ function App() {
   const [project, setProject] = useState<Project | null>(null);
   const [files, setFiles] = useState<GeneratedFile[]>([]);
   const [processingStatus, setProcessingStatus] = useState<any>(null);
+  const [inputSource, setInputSource] = useState<'url' | 'markdown'>('url');
+  const [markdownData, setMarkdownData] = useState<MarkdownData | null>(null);
   
   // エラー・ローディング状態
   const [error, setError] = useState<string>('');
@@ -138,6 +143,7 @@ function App() {
     try {
       // プロジェクト作成
       const result = await projectAPI.create({
+        input_source: 'url',
         url: inputUrl,
         scenario_type: 'product_introduction', // デフォルト
         options: {}
@@ -182,7 +188,7 @@ function App() {
 
   const handleStartNew = () => {
     // 状態をリセットして新しいプロジェクトを開始
-    setAppState('url-input');
+    setAppState('information-source-selection');
     setProjectId('');
     setUrl('');
     setScenarioType('');
@@ -193,11 +199,23 @@ function App() {
     setProcessingStatus(null);
     setError('');
     setIsLoading(false);
+    setInputSource('url');
+    setMarkdownData(null);
   };
 
   // レンダリング
   const renderCurrentScreen = () => {
     switch (appState) {
+      case 'information-source-selection':
+        return (
+          <InformationSourceSelector
+            onSelect={(source) => {
+              setInputSource(source);
+              setAppState(source === 'url' ? 'url-input' : 'markdown-upload');
+            }}
+          />
+        );
+
       case 'url-input':
         return (
           <UrlInput
@@ -205,6 +223,34 @@ function App() {
             isLoading={isLoading}
             error={error}
           />
+        );
+
+      case 'markdown-upload':
+        return (
+          <MarkdownUploader
+            onUpload={(md) => {
+              setMarkdownData(md);
+              setAppState('markdown-preview');
+            }}
+            onBack={() => setAppState('information-source-selection')}
+            isLoading={isLoading}
+            error={error}
+          />
+        );
+
+      case 'markdown-preview':
+        return markdownData ? (
+          <MarkdownPreview
+            markdown={markdownData}
+            scenarioType={scenarioType || 'product_introduction'}
+            onBack={() => setAppState('markdown-upload')}
+            onNext={(pid) => {
+              setProjectId(pid);
+              setAppState('scenario-selection');
+            }}
+          />
+        ) : (
+          <div>Markdownデータがありません</div>
         );
 
       case 'scenario-selection':

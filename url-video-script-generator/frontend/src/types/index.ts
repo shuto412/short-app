@@ -1,6 +1,9 @@
 // API関連の型定義
 export interface ProjectCreate {
-  url: string;
+  input_source: 'url' | 'markdown';
+  url?: string;
+  markdown_content?: string;
+  markdown_filename?: string;
   scenario_type: string;
   options?: {
     target_duration?: number;
@@ -10,8 +13,10 @@ export interface ProjectCreate {
 
 export interface Project {
   id: string;
-  url: string;
+  url?: string;
   title: string;
+  input_source?: 'url' | 'markdown';
+  markdown_filename?: string;
   scenario_type: string;
   status: 'created' | 'processing' | 'completed' | 'failed';
   created_at: string;
@@ -128,11 +133,21 @@ export interface ResultViewerProps {
 
 // アプリケーションの状態管理
 export type AppState = 
+  | 'information-source-selection'
   | 'url-input'
+  | 'markdown-upload'
+  | 'markdown-preview'
   | 'scenario-selection'
   | 'voice-actor-selection'
   | 'processing'
   | 'result'; 
+
+export interface MarkdownData {
+  filename: string;
+  content: string;
+  size: number;
+  lastModified: number;
+}
 
 // スクリプト関連の型定義
 export interface Script {

@@ -24,23 +24,7 @@ import {
   VolumeUp as VolumeIcon
 } from '@mui/icons-material';
 import { generationAPI } from '../services/api';
-import type { AudioFilesResponse, AudioSegment } from '../types';
-
-interface Project {
-  id: string;
-  title: string;
-  url: string;
-  scenario_type: string;
-  status: string;
-  created_at: string;
-  updated_at: string;
-}
-
-interface GeneratedFile {
-  name: string;
-  type: string;
-  downloadUrl: string;
-}
+import type { AudioFilesResponse, AudioSegment, Project, GeneratedFile } from '../types';
 
 interface ResultViewerProps {
   projectId: string;

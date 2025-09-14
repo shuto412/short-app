@@ -6,11 +6,13 @@ import logging
 
 from app.models.project import Project, ProjectCreate
 from app.modules.file_manager import FileManager
+from app.modules.markdown_processor import MarkdownProcessor
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["projects"])
 file_manager = FileManager()
+markdown_processor = MarkdownProcessor()
 
 # 一時的なメモリストレージ（実際はDBを使用）
 projects_db: Dict[str, Project] = {}
@@ -18,37 +20,52 @@ projects_db: Dict[str, Project] = {}
 @router.post("/")
 @router.post("")  # フロントエンドとの互換性のため両方対応
 async def create_project(project: ProjectCreate):
-    """新規プロジェクト作成"""
+    """新規プロジェクト作成（URL/Markdown対応）"""
     try:
         project_id = str(uuid.uuid4())
-        
-        # プロジェクトのタイトルを生成（URLから推定）
-        title = _generate_title_from_url(project.url)
-        
+        await file_manager.create_project_dir(project_id)
+
+        input_source = project.input_source or "url"
+        url: Optional[str] = None
+        markdown_filename: Optional[str] = None
+        title: Optional[str] = None
+
+        if input_source == "markdown":
+            if not project.markdown_content:
+                raise HTTPException(status_code=400, detail="markdown_content is required")
+            markdown_filename = project.markdown_filename or "markdown.md"
+            await file_manager.save_file(project_id, "markdown.md", project.markdown_content)
+            meta = await markdown_processor.extract_metadata(project.markdown_content)
+            title = (meta.get("title") or "Markdown - 動画制作プロジェクト")
+        else:
+            if not project.url:
+                raise HTTPException(status_code=400, detail="url is required")
+            url = project.url
+            title = _generate_title_from_url(url)
+
         new_project = Project(
             id=project_id,
-            url=project.url,
+            url=url,
             title=title,
+            input_source=input_source,
+            markdown_filename=markdown_filename,
             scenario_type=project.scenario_type,
             status="created",
             created_at=datetime.now(),
             updated_at=datetime.now()
         )
-        
-        # メモリに保存
+
         projects_db[project_id] = new_project
-        
-        # プロジェクトディレクトリ作成
-        await file_manager.create_project_dir(project_id)
-        
-        logger.info(f"Created project {project_id}")
-        
+        logger.info(f"Created project {project_id} (source={input_source})")
+
         return {
             "project_id": project_id,
             "status": "created",
             "message": "Project created successfully"
         }
-        
+
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Project creation failed: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to create project")
@@ -69,6 +86,8 @@ async def get_project(project_id: str):
             "id": project.id,
             "url": project.url,
             "title": project.title,
+            "input_source": project.input_source,
+            "markdown_filename": project.markdown_filename,
             "scenario_type": project.scenario_type,
             "status": project.status,
             "created_at": project.created_at.isoformat(),
@@ -110,6 +129,8 @@ async def list_projects():
             "id": project.id,
             "title": project.title,
             "url": project.url,
+            "input_source": project.input_source,
+            "markdown_filename": project.markdown_filename,
             "scenario_type": project.scenario_type,
             "status": project.status,
             "progress": progress,
@@ -171,18 +192,22 @@ def _calculate_progress(project_id: str, files: List[str]) -> Dict:
     ]
     
     for i, file_name in enumerate(required_files):
-        if file_name in files:
-            completed_steps.append({
-                "step": step_names[i],
-                "completed": True,
-                "file": file_name
-            })
+        completed = False
+        reported_file = file_name
+        if i == 0:
+            if file_name in files:
+                completed = True
+            elif "markdown.md" in files:
+                completed = True
+                reported_file = "markdown.md"
         else:
-            completed_steps.append({
-                "step": step_names[i],
-                "completed": False,
-                "file": file_name
-            })
+            completed = file_name in files
+
+        completed_steps.append({
+            "step": step_names[i],
+            "completed": completed,
+            "file": reported_file
+        })
     
     completed_count = sum(1 for step in completed_steps if step["completed"])
     progress_percentage = (completed_count / total_steps) * 100

@@ -1,15 +1,20 @@
 const API_BASE_URL = 'http://localhost:8080/api';
 
 export interface ProjectCreate {
-  url: string;
+  input_source: 'url' | 'markdown';
+  url?: string;
+  markdown_content?: string;
+  markdown_filename?: string;
   scenario_type: string;
   options?: Record<string, any>;
 }
 
 export interface Project {
   id: string;
-  url: string;
+  url?: string;
   title: string;
+  input_source?: 'url' | 'markdown';
+  markdown_filename?: string;
   scenario_type: string;
   status: 'created' | 'processing' | 'completed' | 'failed';
   created_at: string;
@@ -76,6 +81,21 @@ export const projectAPI = {
   
   getStatus: async (projectId: string) => {
     return await debugFetch(`${API_BASE_URL}/projects/${projectId}/status`);
+  },
+};
+
+export const markdownAPI = {
+  validate: async (content: string, filename?: string) => {
+    return await debugFetch(`${API_BASE_URL}/markdown/validate`, {
+      method: 'POST',
+      body: JSON.stringify({ content, filename }),
+    });
+  },
+  preview: async (content: string, filename?: string) => {
+    return await debugFetch(`${API_BASE_URL}/markdown/preview`, {
+      method: 'POST',
+      body: JSON.stringify({ content, filename }),
+    });
   },
 };
 
